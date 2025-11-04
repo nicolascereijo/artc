@@ -4,12 +4,43 @@ from librosa.feature import rms
 
 def calculate_energy_envelope(audio_signal: np.ndarray,
                               /, *, hop_length: int = 512) -> np.ndarray:
+    """
+        Computes the energy envelope of the audio signal using RMS and returns its frequency-domain
+        representation.
+
+        Args:
+            audio_signal (np.ndarray): Time-series array of the audio signal.
+
+        Keyword Arguments:
+            hop_length (int): Number of samples between successive analysis frames.
+
+        Returns:
+            np.ndarray: FFT of the energy envelope sequence.
+    """
     energy_envelope = rms(y=audio_signal, hop_length=hop_length)
     return np.fft.fft(energy_envelope)
 
 
 def compare_two_energy_envelope(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                                 /, *, hop_length: int = 512) -> float:
+    """
+        Compares energy envelopes between two audio signals by computing their energy envelope FFTs
+        and returning a normalized similarity score.
+
+        Args:
+            audio_signal1 (np.ndarray): First audio time-series array.
+            audio_signal2 (np.ndarray): Second audio time-series array.
+
+        Keyword Arguments:
+            hop_length (int): Number of samples between successive analysis frames.
+
+        Returns:
+            float: Similarity score between 0 and 1, where 1 indicates identical energy
+            envelopes.
+
+        See Also:
+            calculate_energy_envelope
+    """
     energy_envelope1 = calculate_energy_envelope(audio_signal1, hop_length=hop_length)
     energy_envelope2 = calculate_energy_envelope(audio_signal2, hop_length=hop_length)
 
@@ -27,6 +58,22 @@ def compare_two_energy_envelope(audio_signal1: np.ndarray, audio_signal2: np.nda
 
 def compare_multiple_energy_envelope(audio_signals: list,
                                      /, *, hop_length: int = 512) -> float:
+    """
+        Computes average energy envelope similarity for all unique signal pairs using
+        `compare_two_energy_envelope`, reflecting overall dynamic coherence.
+
+        Args:
+            audio_signals (list[np.ndarray]): List of audio time-series arrays.
+
+        Keyword Arguments:
+            hop_length (int): Number of samples between successive analysis frames.
+
+        Returns:
+            float: Mean similarity score across all unique pairwise comparisons.
+
+        See Also:
+            compare_two_energy_envelope
+    """
     num_signals = len(audio_signals)
     total_similarity = 0.0
     num_comparisons = 0

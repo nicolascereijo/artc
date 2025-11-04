@@ -10,22 +10,27 @@
   "metric": {
     "window_parameter": {
       "beat_alignment": 1024,
-      "chroma": 2048,
+      "chroma_cens": 512,
+      "chroma_stft": 2048,
       "dynamic_time_warping": 1024,
       "energy_envelope": 512,
       "harmonic_noise_ratio": 512,
+      "harmonic_tempogram": 512,
       "mfcc": 8192,
       "onset_detection": 8192,
       "peak_matching": 4096,
       "pitch": 8192,
-      "rhythm": 1024,
       "spectral_bandwidth": 4096,
       "spectral_centroid": 4096,
       "spectral_contrast": 2048,
       "spectral_flatness": 8192,
       "spectral_roll_off": 512,
+      "spectrogram": 4096,
+      "tempo": 1024,
+      "tempogram": 512,
       "temporal_flux": 8192,
-      "spectrogram": 4096
+      "weighted_cyclic_tempogram": 512,
+      "zero_crossing_rate": 512
     }
   },
   "stats": ["mean", "variance", "mean_of_mode_range", "maximum", "minimum"]

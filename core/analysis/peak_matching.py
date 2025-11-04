@@ -4,23 +4,32 @@ import librosa
 
 def calculate_peak_matching(audio_signal: np.ndarray, sample_rate: float,
                             /, *, n_fft: int = 4096) -> tuple[np.ndarray, np.ndarray]:
+    """
+        Identifies prominent spectral peaks by computing the STFT magnitude, averaging across time,
+        and picking peaks in the decibel domain.
+
+        Args:
+            audio_signal (np.ndarray): Time-series array of the audio signal.
+            sample_rate (float): Sampling rate (in Hz) of the audio signal.
+
+        Keyword Arguments:
+            n_fft (int): Length of the FFT window for spectral analysis.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray]: Array of peak frequencies and corresponding magnitudes.
+    """
     spectrogram = np.abs(librosa.stft(audio_signal, n_fft=n_fft))
     one_dimensional_spectrogram = np.mean(spectrogram, axis=1)
 
-    """
-        - pre_max (typical range: 3-10): Number of samples before the current point that must be
-        smaller for it to be considered a peak.
-        - post_max (typical range: 3-10): Number of samples after the current point that must be
-        smaller for it to be considered a peak.
-        - pre_avg (typical range: 3-10): Number of samples before the current point to compute the
-        local average, helping to smooth the signal.
-        - post_avg (typical range: 3-10): Number of samples after the current point to compute the
-        local average, helping to smooth the signal.
-        - delta (typical range: 0.1-1.0): Minimum amplitude threshold that a peak must have to be
-        considered as such, detecting only the most prominent peaks.
-        - wait (typical range: 1-10): Minimum number of samples between successive peaks, preventing
-        the detection of peaks that are too close to each other.
-    """
+    # Peak picking parameters:
+    # - pre_max, post_max (typical range: 3-10): Number of samples before/after the current point
+    # that must be smaller for it to be considered a peak.
+    # - pre_avg, post_avg (typical range: 3-10): Number of samples before/after the current point to
+    # compute the local average, helping to smooth the signal.
+    # - delta (typical range: 0.1-1.0): Minimum amplitude threshold that a peak must have to be
+    # considered as such, detecting only the most prominent peaks.
+    # - wait (typical range: 1-10): Minimum number of samples between successive peaks, preventing
+    # the detection of peaks that are too close to each other.
     spectral_peaks = librosa.util.peak_pick(
         librosa.amplitude_to_db(one_dimensional_spectrogram),
         pre_max=3, post_max=3, pre_avg=3, post_avg=5, delta=0.5, wait=5)
@@ -35,6 +44,25 @@ def calculate_peak_matching(audio_signal: np.ndarray, sample_rate: float,
 def compare_two_peak_matching(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                               sample_rate1: float, sample_rate2: float,
                               /, *, n_fft: int = 4096) -> float:
+    """
+        Compares spectral peak patterns between two audio signals by extracting their peak sets and
+        computing an average frequency-magnitude similarity score.
+
+        Args:
+            audio_signal1 (np.ndarray): First audio time-series array.
+            audio_signal2 (np.ndarray): Second audio time-series array.
+            sample_rate1 (float): Sampling rate (in Hz) of the first signal.
+            sample_rate2 (float): Sampling rate (in Hz) of the second signal.
+
+        Keyword Arguments:
+            n_fft (int): Length of the FFT window for spectral analysis.
+
+        Returns:
+            float: Similarity score between 0 and 1, where 1 indicates identical peak sets.
+
+        See Also:
+            calculate_peak_matching
+    """
     peak_freq1, peak_mag1 = calculate_peak_matching(audio_signal1, sample_rate1, n_fft=n_fft)
     peak_freq2, peak_mag2 = calculate_peak_matching(audio_signal2, sample_rate2, n_fft=n_fft)
 
@@ -61,6 +89,26 @@ def compare_two_peak_matching(audio_signal1: np.ndarray, audio_signal2: np.ndarr
 
 def compare_multiple_peak_matching(audio_signals: list, sample_rates: list,
                                    /, *, n_fft: int = 4096) -> float:
+    """
+        Computes average spectral peak similarity across all unique signal pairs using
+        `compare_two_peak_matching`, reflecting overall spectral feature coherence.
+
+        Args:
+            audio_signals (list[np.ndarray]): List of audio time-series arrays.
+            sample_rates (list[float]): Corresponding sampling rates of each signal.
+
+        Keyword Arguments:
+            n_fft (int): Length of the FFT window for spectral analysis.
+
+        Returns:
+            float: Mean similarity score across all unique pairwise comparisons.
+
+        Raises:
+            ValueError: If the number of signals does not match the number of sample rates.
+
+        See Also:
+            compare_two_peak_matching
+    """
     if len(audio_signals) != len(sample_rates):
         raise ValueError("The number of signals must match the number of sampling rates")
 

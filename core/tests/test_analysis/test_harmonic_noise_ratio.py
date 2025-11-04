@@ -29,66 +29,126 @@ def test_compare_two_hnr(setup):
     data_set = setup
     n_fft = 512
     hop_length = 512
-    audio_signal1, sample_rate1 = load(data_set["individual_files"][0]["path"] /
-                                       data_set["individual_files"][0]["name"])
-    audio_signal2, sample_rate2 = load(data_set["individual_files"][1]["path"] /
-                                       data_set["individual_files"][1]["name"])
-    audio_signal3, sample_rate3 = load(data_set["individual_files"][2]["path"] /
-                                       data_set["individual_files"][2]["name"])
+    audio_signal1, sample_rate1 = load(
+        data_set["individual_files"][0]["path"] /
+        data_set["individual_files"][0]["name"]
+    )
+    audio_signal2, sample_rate2 = load(
+        data_set["individual_files"][1]["path"] /
+        data_set["individual_files"][1]["name"]
+    )
+    audio_signal3, sample_rate3 = load(
+        data_set["individual_files"][2]["path"] /
+        data_set["individual_files"][2]["name"]
+    )
 
-    assert analysis.compare_two_hnr(audio_signal1, audio_signal1,
-                                    n_fft=n_fft, hop_length=hop_length) == 1
-    assert analysis.compare_two_hnr(audio_signal2, audio_signal2,
-                                    n_fft=n_fft, hop_length=hop_length) == 1
-    assert analysis.compare_two_hnr(audio_signal3, audio_signal3,
-                                    n_fft=n_fft, hop_length=hop_length) == 1
-    assert round(analysis.compare_two_hnr(audio_signal1, audio_signal2,
-                                          n_fft=n_fft, hop_length=hop_length), 5) == 0.73186
-    assert round(analysis.compare_two_hnr(audio_signal2, audio_signal1,
-                                          n_fft=n_fft, hop_length=hop_length), 5) == 0.73186
-    assert round(analysis.compare_two_hnr(audio_signal1, audio_signal3,
-                                          n_fft=n_fft, hop_length=hop_length), 5) == 0.42965
-    assert round(analysis.compare_two_hnr(audio_signal3, audio_signal1,
-                                          n_fft=n_fft, hop_length=hop_length), 5) == 0.42965
-    assert round(analysis.compare_two_hnr(audio_signal2, audio_signal3,
-                                          n_fft=n_fft, hop_length=hop_length), 5) == 0.58707
-    assert round(analysis.compare_two_hnr(audio_signal3, audio_signal2,
-                                          n_fft=n_fft, hop_length=hop_length), 5) == 0.58707
+    assert analysis.compare_two_hnr(
+        audio_signal1, audio_signal1,
+        n_fft=n_fft, hop_length=hop_length
+    ) == 1
+    assert analysis.compare_two_hnr(
+        audio_signal2, audio_signal2,
+        n_fft=n_fft, hop_length=hop_length
+    ) == 1
+    assert analysis.compare_two_hnr(
+        audio_signal3, audio_signal3,
+        n_fft=n_fft, hop_length=hop_length
+    ) == 1
+
+    assert round(analysis.compare_two_hnr(
+        audio_signal1, audio_signal2,
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.73186
+    assert round(analysis.compare_two_hnr(
+        audio_signal2, audio_signal1,
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.73186
+
+    assert round(analysis.compare_two_hnr(
+        audio_signal1, audio_signal3,
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.42965
+    assert round(analysis.compare_two_hnr(
+        audio_signal3, audio_signal1,
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.42965
+
+    assert round(analysis.compare_two_hnr(
+        audio_signal2, audio_signal3,
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.58707
+    assert round(analysis.compare_two_hnr(
+        audio_signal3, audio_signal2,
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.58707
 
 
 def test_compare_multiple_hnr(setup):
     data_set = setup
     n_fft = 512
     hop_length = 512
-    audio_signal1, sample_rate1 = load(data_set["individual_files"][0]["path"] /
-                                       data_set["individual_files"][0]["name"])
-    audio_signal2, sample_rate2 = load(data_set["individual_files"][1]["path"] /
-                                       data_set["individual_files"][1]["name"])
-    audio_signal3, sample_rate3 = load(data_set["individual_files"][2]["path"] /
-                                       data_set["individual_files"][2]["name"])
+    audio_signal1, sample_rate1 = load(
+        data_set["individual_files"][0]["path"] /
+        data_set["individual_files"][0]["name"]
+    )
+    audio_signal2, sample_rate2 = load(
+        data_set["individual_files"][1]["path"] /
+        data_set["individual_files"][1]["name"]
+    )
+    audio_signal3, sample_rate3 = load(
+        data_set["individual_files"][2]["path"] /
+        data_set["individual_files"][2]["name"]
+    )
 
-    assert analysis.compare_multiple_hnr([audio_signal1, audio_signal1],
-                                         n_fft=n_fft, hop_length=hop_length) == 1
-    assert analysis.compare_multiple_hnr([audio_signal2, audio_signal2],
-                                         n_fft=n_fft, hop_length=hop_length) == 1
-    assert analysis.compare_multiple_hnr([audio_signal3, audio_signal3],
-                                         n_fft=n_fft, hop_length=hop_length) == 1
-    assert round(analysis.compare_multiple_hnr([audio_signal1, audio_signal2],
-                                               n_fft=n_fft, hop_length=hop_length), 5) == 0.73186
-    assert round(analysis.compare_multiple_hnr([audio_signal2, audio_signal1],
-                                               n_fft=n_fft, hop_length=hop_length), 5) == 0.73186
-    assert round(analysis.compare_multiple_hnr([audio_signal1, audio_signal3],
-                                               n_fft=n_fft, hop_length=hop_length), 5) == 0.42965
-    assert round(analysis.compare_multiple_hnr([audio_signal3, audio_signal1],
-                                               n_fft=n_fft, hop_length=hop_length), 5) == 0.42965
-    assert round(analysis.compare_multiple_hnr([audio_signal2, audio_signal3],
-                                               n_fft=n_fft, hop_length=hop_length), 5) == 0.58707
-    assert round(analysis.compare_multiple_hnr([audio_signal3, audio_signal2],
-                                               n_fft=n_fft, hop_length=hop_length), 5) == 0.58707
+    assert analysis.compare_multiple_hnr(
+        [audio_signal1, audio_signal1],
+        n_fft=n_fft, hop_length=hop_length
+    ) == 1
+    assert analysis.compare_multiple_hnr(
+        [audio_signal2, audio_signal2],
+        n_fft=n_fft, hop_length=hop_length
+    ) == 1
+    assert analysis.compare_multiple_hnr(
+        [audio_signal3, audio_signal3],
+        n_fft=n_fft, hop_length=hop_length
+    ) == 1
 
-    assert analysis.compare_multiple_hnr([audio_signal1, audio_signal1, audio_signal1],
-                                         n_fft=n_fft, hop_length=hop_length) == 1
-    assert analysis.compare_multiple_hnr([audio_signal2, audio_signal2, audio_signal2],
-                                         n_fft=n_fft, hop_length=hop_length) == 1
-    assert analysis.compare_multiple_hnr([audio_signal3, audio_signal3, audio_signal3],
-                                         n_fft=n_fft, hop_length=hop_length) == 1
+    assert round(analysis.compare_multiple_hnr(
+        [audio_signal1, audio_signal2],
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.73186
+    assert round(analysis.compare_multiple_hnr(
+        [audio_signal2, audio_signal1],
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.73186
+
+    assert round(analysis.compare_multiple_hnr(
+        [audio_signal1, audio_signal3],
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.42965
+    assert round(analysis.compare_multiple_hnr(
+        [audio_signal3, audio_signal1],
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.42965
+
+    assert round(analysis.compare_multiple_hnr(
+        [audio_signal2, audio_signal3],
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.58707
+    assert round(analysis.compare_multiple_hnr(
+        [audio_signal3, audio_signal2],
+        n_fft=n_fft, hop_length=hop_length), 5
+    ) == 0.58707
+
+    assert analysis.compare_multiple_hnr(
+        [audio_signal1, audio_signal1, audio_signal1],
+        n_fft=n_fft, hop_length=hop_length
+    ) == 1
+    assert analysis.compare_multiple_hnr(
+        [audio_signal2, audio_signal2, audio_signal2],
+        n_fft=n_fft, hop_length=hop_length
+    ) == 1
+    assert analysis.compare_multiple_hnr(
+        [audio_signal3, audio_signal3, audio_signal3],
+        n_fft=n_fft, hop_length=hop_length
+    ) == 1

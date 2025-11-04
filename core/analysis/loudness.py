@@ -3,6 +3,17 @@ import librosa
 
 
 def calculate_loudness(audio_signal: np.ndarray, sample_rate: float) -> np.ndarray:
+    """
+        Computes A-weighted loudness of the audio signal by converting its magnitude spectrogram to
+        decibels, applying A-weighting, and returning the frequency-domain representation.
+
+        Args:
+            audio_signal (np.ndarray): Time-series array of the audio signal.
+            sample_rate (float): Sampling rate (in Hz) of the audio signal.
+
+        Returns:
+            np.ndarray: FFT of the A-weighted decibel spectrogram.
+    """
     magnitude_spectrogram = np.abs(librosa.stft(audio_signal))
     db_spectrogram = librosa.amplitude_to_db(magnitude_spectrogram, ref=np.max)
 
@@ -15,6 +26,22 @@ def calculate_loudness(audio_signal: np.ndarray, sample_rate: float) -> np.ndarr
 
 def compare_two_loudness(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                          sample_rate1: float, sample_rate2: float, /) -> float:
+    """
+        Compares loudness profiles between two audio signals by computing their A-weighted
+        spectrogram FFTs and returning a normalized similarity score.
+
+        Args:
+            audio_signal1 (np.ndarray): First audio time-series array.
+            audio_signal2 (np.ndarray): Second audio time-series array.
+            sample_rate1 (float): Sampling rate (in Hz) of the first signal.
+            sample_rate2 (float): Sampling rate (in Hz) of the second signal.
+
+        Returns:
+            float: Similarity score between 0 and 1, where 1 indicates identical loudness patterns.
+
+        See Also:
+            calculate_loudness
+    """
     loudness1 = calculate_loudness(audio_signal1, sample_rate1)
     loudness2 = calculate_loudness(audio_signal2, sample_rate2)
 
@@ -31,6 +58,20 @@ def compare_two_loudness(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
 
 
 def compare_multiple_loudness(audio_signals: list, sample_rates: list, /) -> float:
+    """
+        Computes average loudness similarity for all unique signal pairs using
+        `compare_two_loudness`, reflecting overall loudness pattern coherence.
+
+        Args:
+            audio_signals (list[np.ndarray]): List of audio time-series arrays.
+            sample_rates  (list[float]): Corresponding sampling rates of each signal.
+
+        Returns:
+            float: Mean similarity score across all unique pairwise comparisons.
+
+        See Also:
+            compare_two_loudness
+    """
     num_signals = len(audio_signals)
     total_similarity = 0.0
     num_comparisons = 0

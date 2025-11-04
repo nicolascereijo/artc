@@ -28,74 +28,125 @@ def setup():
 def test_compare_two_spect_flatness(setup):
     data_set = setup
     n_fft = 512
-    audio_signal1, sample_rate1 = load(data_set["individual_files"][0]["path"] /
-                                       data_set["individual_files"][0]["name"])
-    audio_signal2, sample_rate2 = load(data_set["individual_files"][1]["path"] /
-                                       data_set["individual_files"][1]["name"])
-    audio_signal3, sample_rate3 = load(data_set["individual_files"][2]["path"] /
-                                       data_set["individual_files"][2]["name"])
+    audio_signal1, sample_rate1 = load(
+        data_set["individual_files"][0]["path"] /
+        data_set["individual_files"][0]["name"]
+    )
+    audio_signal2, sample_rate2 = load(
+        data_set["individual_files"][1]["path"] /
+        data_set["individual_files"][1]["name"]
+    )
+    audio_signal3, sample_rate3 = load(
+        data_set["individual_files"][2]["path"] /
+        data_set["individual_files"][2]["name"]
+    )
 
-    assert analysis.compare_two_spectral_flatness(audio_signal1, audio_signal1,
-                                                  n_fft=n_fft) == 1
-    assert analysis.compare_two_spectral_flatness(audio_signal2, audio_signal2,
-                                                  n_fft=n_fft) == 1
-    assert analysis.compare_two_spectral_flatness(audio_signal3, audio_signal3,
-                                                  n_fft=n_fft) == 1
-    assert round(analysis.compare_two_spectral_flatness(audio_signal1, audio_signal2,
-                                                        n_fft=n_fft), 5) == 0.24833
-    assert round(analysis.compare_two_spectral_flatness(audio_signal2, audio_signal1,
-                                                        n_fft=n_fft), 5) == 0.24833
-    assert round(analysis.compare_two_spectral_flatness(audio_signal1, audio_signal3,
-                                                        n_fft=n_fft), 5) == 0.10545
-    assert round(analysis.compare_two_spectral_flatness(audio_signal3, audio_signal1,
-                                                        n_fft=n_fft), 5) == 0.10545
-    assert round(analysis.compare_two_spectral_flatness(audio_signal2, audio_signal3,
-                                                        n_fft=n_fft), 5) == 0.59233
-    assert round(analysis.compare_two_spectral_flatness(audio_signal3, audio_signal2,
-                                                        n_fft=n_fft), 5) == 0.59233
+    assert analysis.compare_two_spectral_flatness(
+        audio_signal1, audio_signal1,
+        n_fft=n_fft
+    ) == 1
+    assert analysis.compare_two_spectral_flatness(
+        audio_signal2, audio_signal2,
+        n_fft=n_fft
+    ) == 1
+    assert analysis.compare_two_spectral_flatness(
+        audio_signal3, audio_signal3,
+        n_fft=n_fft
+    ) == 1
+
+    assert round(analysis.compare_two_spectral_flatness(
+        audio_signal1, audio_signal2,
+        n_fft=n_fft), 5
+    ) == 0.24833
+    assert round(analysis.compare_two_spectral_flatness(
+        audio_signal2, audio_signal1,
+        n_fft=n_fft), 5
+    ) == 0.24833
+
+    assert round(analysis.compare_two_spectral_flatness(
+        audio_signal1, audio_signal3,
+        n_fft=n_fft), 5
+    ) == 0.10545
+    assert round(analysis.compare_two_spectral_flatness(
+        audio_signal3, audio_signal1,
+        n_fft=n_fft), 5
+    ) == 0.10545
+
+    assert round(analysis.compare_two_spectral_flatness(
+        audio_signal2, audio_signal3,
+        n_fft=n_fft), 5
+    ) == 0.59233
+    assert round(analysis.compare_two_spectral_flatness(
+        audio_signal3, audio_signal2,
+        n_fft=n_fft), 5
+    ) == 0.59233
 
 
 def test_compare_multiple_spect_flatness(setup):
     data_set = setup
     n_fft = 512
-    audio_signal1, sample_rate1 = load(data_set["individual_files"][0]["path"] /
-                                       data_set["individual_files"][0]["name"])
-    audio_signal2, sample_rate2 = load(data_set["individual_files"][1]["path"] /
-                                       data_set["individual_files"][1]["name"])
-    audio_signal3, sample_rate3 = load(data_set["individual_files"][2]["path"] /
-                                       data_set["individual_files"][2]["name"])
+    audio_signal1, sample_rate1 = load(
+        data_set["individual_files"][0]["path"] /
+        data_set["individual_files"][0]["name"]
+    )
+    audio_signal2, sample_rate2 = load(
+        data_set["individual_files"][1]["path"] /
+        data_set["individual_files"][1]["name"]
+    )
+    audio_signal3, sample_rate3 = load(
+        data_set["individual_files"][2]["path"] /
+        data_set["individual_files"][2]["name"]
+    )
 
-    assert analysis.compare_multiple_spectral_flatness([audio_signal1, audio_signal1],
-                                                       n_fft=n_fft) == 1
-    assert analysis.compare_multiple_spectral_flatness([audio_signal2, audio_signal2],
-                                                       n_fft=n_fft) == 1
-    assert analysis.compare_multiple_spectral_flatness([audio_signal3, audio_signal3],
-                                                       n_fft=n_fft) == 1
+    assert analysis.compare_multiple_spectral_flatness(
+        [audio_signal1, audio_signal1],
+        n_fft=n_fft
+    ) == 1
+    assert analysis.compare_multiple_spectral_flatness(
+        [audio_signal2, audio_signal2],
+        n_fft=n_fft
+    ) == 1
+    assert analysis.compare_multiple_spectral_flatness(
+        [audio_signal3, audio_signal3],
+        n_fft=n_fft
+    ) == 1
+
     assert round(analysis.compare_multiple_spectral_flatness(
         [audio_signal1, audio_signal2],
-        n_fft=n_fft), 5) == 0.24833
+        n_fft=n_fft), 5
+    ) == 0.24833
     assert round(analysis.compare_multiple_spectral_flatness(
         [audio_signal2, audio_signal1],
-        n_fft=n_fft), 5) == 0.24833
+        n_fft=n_fft), 5
+    ) == 0.24833
+
     assert round(analysis.compare_multiple_spectral_flatness(
         [audio_signal1, audio_signal3],
-        n_fft=n_fft), 5) == 0.10545
+        n_fft=n_fft), 5
+    ) == 0.10545
     assert round(analysis.compare_multiple_spectral_flatness(
         [audio_signal3, audio_signal1],
-        n_fft=n_fft), 5) == 0.10545
+        n_fft=n_fft), 5
+    ) == 0.10545
+
     assert round(analysis.compare_multiple_spectral_flatness(
         [audio_signal2, audio_signal3],
-        n_fft=n_fft), 5) == 0.59233
+        n_fft=n_fft), 5
+    ) == 0.59233
     assert round(analysis.compare_multiple_spectral_flatness(
         [audio_signal3, audio_signal2],
-        n_fft=n_fft), 5) == 0.59233
+        n_fft=n_fft), 5
+    ) == 0.59233
 
     assert analysis.compare_multiple_spectral_flatness(
         [audio_signal1, audio_signal1, audio_signal1],
-        n_fft=n_fft) == 1
+        n_fft=n_fft
+    ) == 1
     assert analysis.compare_multiple_spectral_flatness(
         [audio_signal2, audio_signal2, audio_signal2],
-        n_fft=n_fft) == 1
+        n_fft=n_fft
+    ) == 1
     assert analysis.compare_multiple_spectral_flatness(
         [audio_signal3, audio_signal3, audio_signal3],
-        n_fft=n_fft) == 1
+        n_fft=n_fft
+    ) == 1
