@@ -22,7 +22,8 @@ _ = setup(
     license="MIT",
     python_requires=">=3.10,<3.13",
     install_requires=requires,
-    packages=find_packages(),
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
     package_data={
         "artc.core.configurations": ["default_configurations.json"],
         "artc.cli": ["commands.json"],
