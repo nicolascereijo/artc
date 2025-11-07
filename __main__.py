@@ -14,11 +14,11 @@ def main() -> None:
     logger: Logger = errors.logger_config.LoggerSingleton().get_logger()
 
     if not os.access(commands_path, os.R_OK):
-        logger.critical(
-            """Could not access commands file, suite execution aborted. The
+        logger.critical("""
+            Could not access commands file, suite execution aborted. The
             commands.json file should be located in the /core/cli/ folder.
-            Check the directory and access permissions."""
-        )
+            Check the directory and access permissions.
+            """)
         sys.exit(1)
 
     parsed_args: Namespace = cli.parse_args(commands_path, logger=logger)
