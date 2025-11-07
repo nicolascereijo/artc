@@ -43,8 +43,9 @@ nosetests.xml
 coverage.xml
 *.log
 
-# MyPy
+# MyPy / BasedPyright
 .mypy_cache/
+.basedpyright/
 .dmypy.json
 dmypy.json
 
@@ -55,6 +56,10 @@ dmypy.json
 *.sublime-project
 *.sublime-workspace
 
+# Linters / Formatters
+.ruff_cache/
+.black_cache/
+
 # Python environment variables
 *.env
 
@@ -62,6 +67,6 @@ dmypy.json
 *.local
 *.cfg
 
-# Git-specific files
-.git/
-.gitignore
+# OS files
+.DS_Store
+Thumbs.db
