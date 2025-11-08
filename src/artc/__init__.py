@@ -11,6 +11,6 @@ cli: ModuleType
 def __getattr__(name: str) -> ModuleType:
     if name in __all__:
         module = importlib.import_module(f".{name}", __name__)
-        globals()[name] = module  # cache
+        globals()[name] = module  # Cache
         return module
     raise AttributeError(f"module {__name__} has no attribute {name}")
