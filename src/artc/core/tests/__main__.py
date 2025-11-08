@@ -16,14 +16,14 @@ def main(args=None):
     )
     logger = errors.logger_config.LoggerSingleton().get_logger()
 
-    logger.info(
-        "Running the main test suite for ARtC...\n\n"
-        + "    |     '||''|.     .     ..|'''.|      .|'''.|            ||    .          \n"
-        + "   |||     ||   ||  .||.  .|'      '      ||..  '  ... ...  ...  .||.    .... \n"
-        + "  |  ||    ||''|'    ||   ||               ''|||.   ||  ||   ||   ||   .|...||\n"
-        + " .''''|.   ||   |.   ||   '|.      .     .     '||  ||  ||   ||   ||   ||     \n"
-        + ".|.  .||. .||.  '|' .||.   ''|....'      |'....|'   '|..'|. .||.  '|.'  '|...'\n"
-    )
+    logger.info("""
+        Running the main test suite for ARtC...\n
+            |     '||''|.     .     ..|'''.|      .|'''.|            ||    .
+           |||     ||   ||  .||.  .|'      '      ||..  '  ... ...  ...  .||.    ....
+          |  ||    ||''|'    ||   ||               ''|||.   ||  ||   ||   ||   .|...||
+         .''''|.   ||   |.   ||   '|.      .     .     '||  ||  ||   ||   ||   ||
+        .|.  .||. .||.  '|' .||.   ''|....'      |'....|'   '|..'|. .||.  '|.'  '|...'\n
+    """)
 
     if os.access(configuration_path, os.R_OK):
         result = pytest.main(args)
