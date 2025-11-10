@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Callable, cast
 __all__ = ["parse_args", "handle_command"]
 
 if TYPE_CHECKING:
-    from artc.cli.commands import parse_args, handle_command
+    from artc.cli.commands import handle_command, parse_args
 
 
 def __getattr__(name: str) -> Callable[..., object]:

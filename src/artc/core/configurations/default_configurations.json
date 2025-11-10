@@ -1,7 +1,7 @@
 {
   "sysconfig": {
     "max_processes": 4,
-    "max_memory_usage": 50
+    "max_memory_usage": 15
   },
   "audio": {
     "samples_per_chunk": 250000,
