@@ -1,5 +1,4 @@
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 # Read dependencies from requirements.txt
 with open("requirements.txt", encoding="utf-8") as f:
@@ -20,7 +19,7 @@ _ = setup(
     url="https://github.com/NicolasCereijo/artc",
     keywords=["audio", "analysis", "comparison", "real-time", "data collection"],
     license="MIT",
-    python_requires=">=3.10,<3.13",
+    python_requires=">=3.11,<3.13",
     install_requires=requires,
     package_dir={"": "src"},
     packages=find_packages(where="src"),

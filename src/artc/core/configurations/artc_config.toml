@@ -1,0 +1,93 @@
+# ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄
+#
+#     |     '||''|.     .     ..|'''.|      .|'''.|            ||    .
+#    |||     ||   ||  .||.  .|'      '      ||..  '  ... ...  ...  .||.    ....
+#   |  ||    ||''|'    ||   ||               ''|||.   ||  ||   ||   ||   .|...||
+#  .''''|.   ||   |.   ||   '|.      .     .     '||  ||  ||   ||   ||   ||
+# .|.  .||. .||.  '|' .||.   ''|....'      |'....|'   '|..'|. .||.  '|.'  '|...'
+#
+# ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄
+#
+# This is the main configuration file for ARtC. It defines the system settings,
+# valid audio parameters and the computation windows for the available metrics
+#
+# The file is parsed at runtime using `tomllib` and cached in memory
+#
+# Author: Nicolás Cereijo Ranchal
+# Part of the ARtC (Audio Real-time Comparator) framework
+
+
+# │
+# │ System configuration
+# └───────────────────────────────────────────────────────────────────────
+# │ Defines process and memory limits for parallel execution
+
+[sysconfig]
+max_processes = 4       # Maximum number of concurrent worker processes
+max_memory_usage = 15   # Maximum RAM usage percentage (10–60% recommended)
+
+
+# │
+# │ Runtime type-checking flags
+# └───────────────────────────────────────────────────────────────────────
+# │ Controls whether runtime type assertions are enabled
+
+[type_flags]
+frontier_checks = true  # Enables checks at public API boundaries
+full_checks = false     # Enables checks across all internal functions
+
+
+# │
+# │ Audio configuration
+# └───────────────────────────────────────────────────────────────────────
+# │ Defines chunking size and valid extensions for audio inputs
+
+[audio]
+samples_per_chunk = 250000
+valid_extensions = [".mp3", ".wav"]
+
+
+# │
+# │ Metric window parameters
+# └───────────────────────────────────────────────────────────────────────
+# │ Defines default FFT or window sizes for each metric
+# │ These values are tuned for an optimal speed/accuracy trade-off
+
+[metric.window_parameter]
+beat_alignment = 1024
+chroma_cens = 512
+chroma_stft = 2048
+dynamic_time_warping = 1024
+energy_envelope = 512
+harmonic_noise_ratio = 512
+harmonic_tempogram = 512
+mfcc = 8192
+onset_detection = 8192
+peak_matching = 4096
+pitch = 8192
+spectral_bandwidth = 4096
+spectral_centroid = 4096
+spectral_contrast = 2048
+spectral_flatness = 8192
+spectral_roll_off = 512
+spectrogram = 4096
+tempo = 1024
+tempogram = 512
+temporal_flux = 8192
+weighted_cyclic_tempogram = 512
+zero_crossing_rate = 512
+
+
+# │
+# │ Statistical analysis settings
+# └───────────────────────────────────────────────────────────────────────
+# │ List of statistical reduction functions applied to pairwise similarity matrices
+
+[stats]
+values = [
+    "mean",
+    "variance",
+    "mean_of_mode_range",
+    "maximum",
+    "minimum",
+]

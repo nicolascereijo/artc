@@ -1,6 +1,7 @@
+import importlib.resources
 import os
 import sys
-import importlib.resources
+
 import pytest
 
 from .. import errors
@@ -11,8 +12,7 @@ def main(args=None):
         args = sys.argv[1:]
 
     configuration_path = str(
-        importlib.resources.files("artc.core.configurations")
-        / "default_configurations.json"
+        importlib.resources.files("artc.core.configurations") / "artc_config.json"
     )
     logger = errors.logger_config.LoggerSingleton().get_logger()
 
