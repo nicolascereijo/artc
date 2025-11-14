@@ -426,14 +426,18 @@ def compare(
     _set_memory_limit()
 
     all_operations: list[Sequence[Callable[[], FloatScalar]]] = []
+    use_sr = analysis.COMPARE_FUNCTIONS[metric]["use_sample_rate"]
     for i, audio_signal_1 in enumerate(items):
         for audio_signal_2 in items[i:]:
             compare_func = analysis.COMPARE_FUNCTIONS[metric]["compare_two"]
 
-            sample_rates = (
-                (audio_signal_1.sample_rate, audio_signal_2.sample_rate)
-                if analysis.COMPARE_FUNCTIONS[metric]["use_sample_rate"]
-                else ()
+            kwargs = (
+                {
+                    "sr1": audio_signal_1.sample_rate,
+                    "sr2": audio_signal_2.sample_rate,
+                }
+                if use_sr
+                else {}
             )
 
             all_operations.extend(
@@ -442,7 +446,7 @@ def compare(
                     compare_func,
                     audio_signal_1.audio_signal_unloaded(),
                     audio_signal_2.audio_signal_unloaded(),
-                    *sample_rates,
+                    **kwargs,
                 )
             )
 

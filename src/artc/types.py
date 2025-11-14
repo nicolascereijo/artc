@@ -9,6 +9,7 @@ Author: Nicolás Cereijo Ranchal
 Part of the ARtC (Audio Real-time Comparator) framework
 """
 
+import inspect
 from argparse import Namespace
 from functools import wraps
 from logging import Logger
@@ -54,15 +55,18 @@ np_ravel: UnaryArrayFn = cast(UnaryArrayFn, np.ravel)
 # Internal helpers
 # ─────────────────────────────────────────────────────────────
 def _get_param_value(func, args, kwargs, param_name: str) -> Any:
-    """Retrieve a parameter's runtime value by name (positional or keyword)"""
-    param_names = func.__code__.co_varnames
-    if param_name in kwargs:
-        return kwargs[param_name]
-    if param_name in param_names:
-        index = param_names.index(param_name)
-        if index < len(args):
-            return args[index]
-    return None
+    """Retrieve the value of a parameter (by name) passed to a function
+
+    Uses the function signature for accurate positional/keyword mapping, even
+    when multiple decorators are stacked
+    """
+    original = inspect.unwrap(func)
+
+    sig = inspect.signature(original)
+    bound = sig.bind_partial(*args, **kwargs)
+    bound.apply_defaults()
+
+    return bound.arguments.get(param_name, None)
 
 
 def _should_skip_check(level: str) -> bool:
