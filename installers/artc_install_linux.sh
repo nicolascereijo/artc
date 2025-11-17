@@ -5,8 +5,8 @@ echo "--------------------------------------------------"
 echo "  ARtC Local Environment Installer (Python 3.12.x)"
 echo "--------------------------------------------------"
 
-# 1) Determine project root (where this script is located)
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 1) Determine project root (one level above this script)
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_DIR"
 
 PYTHON_VERSION="3.12.7"
@@ -98,11 +98,24 @@ else
     echo "No requirements.txt file found. Skipping dependency installation."
 fi
 
-# 8) Optional cleanup (commented out)
+# 8) Cleanup
 echo "Cleaning up build files..."
 rm -rf "$PYTHON_SRC_DIR" "$PYTHON_TARBALL"
 
-# 9) Show final summary
+# 9) Install local package
+echo "Installing local package..."
+
+if [ -f "setup.py" ]; then
+    pip install .
+else
+    echo "Warning: no setup.py found. Skipping package installation."
+fi
+
+# Deactivate the virtual environment
+deactivate
+echo "Environment deactivated."
+
+# 10) Show final summary
 PY_INSTALLED_VER=$("$PY_BIN" --version | awk '{print $2}')
 echo "--------------------------------------------------"
 echo "Setup complete."
