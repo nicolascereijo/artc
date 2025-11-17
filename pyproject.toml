@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "artc"
+version = "1.0b4"
+description = "Beta version of the ARtC (Audio Real-time Comparator) core"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = { text = "MIT" }
+authors = [
+    { name = "Nicolás Cereijo Ranchal", email = "nicolascereijo.careers@protonmail.com" }
+]
+keywords = ["audio", "analysis", "comparison", "real-time", "data collection"]
+urls = {
+    Homepage = "https://github.com/NicolasCereijo/artc"
+}
+
+# Dependencies are read from requirements.txt using dynamic metadata
+dynamic = ["dependencies"]
+
+# Entry points (console scripts)
+[project.scripts]
+artc = "artc.__main__:main"
+
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+# Include package data (replaces setup.py package_data)
+[tool.setuptools.package-data]
+"artc.core.configurations" = ["*.toml"]
+"artc.cli" = ["commands.json"]
+
+
+# Load dependencies from requirements.txt
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}

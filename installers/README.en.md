@@ -55,7 +55,7 @@ Run the Linux installer:
 If it does not have execution permissions:
 
 ```bash
-chmod +x installers/artc-install-linux.sh
+chmod +x installers/artc_install_linux.sh
 ```
 
 ---
