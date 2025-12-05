@@ -14,6 +14,7 @@ from artc.core import analysis, compare
 def main():
     current_path = Path(__file__)
     start_time = time.time()
+
     configuration_path = (
         current_path.parent
         / "src"
@@ -23,6 +24,9 @@ def main():
         / "artc_config.toml"
     )
     files_path = current_path.parent / "test_collection" / "TEMPORARY_sample_selection"
+
+    results_dir = current_path.parent / "TEMPORARY_demo_results"
+    results_dir.mkdir(exist_ok=True)
 
     example_set = dt_structs.WorkingSet("main_set")
     example_set.add_directory(
@@ -37,7 +41,6 @@ def main():
         print(f"> Comparing audios with the '{metric}' metric")
 
         results = compare(metric, example_set, set_to_use="main_set")
-        print(f"> Heatmaps completed, saved to 'TEMPORARY_demo_results/{metric}.png'")
 
         for stat in results:
             stat_name = stat[0]
@@ -66,11 +69,15 @@ def main():
             plt.xlabel("Audios")
             plt.ylabel("Audios")
             plt.tight_layout()
-            plt.savefig(f"TEMPORARY_demo_results/{metric}_{stat_name}.png")
+
+            png_path = results_dir / f"{metric}_{stat_name}.png"
+            csv_path = results_dir / f"{metric}_{stat_name}.csv"
+
+            plt.savefig(png_path)
             plt.close()
 
             np.savetxt(
-                f"TEMPORARY_demo_results/{metric}_{stat_name}.csv",
+                csv_path,
                 result_array,
                 delimiter=",",
                 fmt="%.2f",
@@ -78,8 +85,9 @@ def main():
 
         loop_end_time = time.time()
         print(
-            f"> Time for '{metric}' metric: {loop_end_time - loop_start_time:.2f} seconds\n"
+            f"> Time for '{metric}' metric: {loop_end_time - loop_start_time:.2f} seconds"
         )
+        print(f"> Heatmaps completed, saved to '{results_dir}/{metric}_*.png'\n")
 
     print("\nTest script execution completed!!")
     print(f"Total execution time: {time.time() - start_time:.2f} seconds")
