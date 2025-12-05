@@ -1,4 +1,4 @@
-# ARtC — Installers Documentation
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=ARtC+%E2%80%94+Installers+Documentation" alt="Typing SVG" /></a>
 
 ---
 

@@ -1,4 +1,4 @@
-# ARtC — Guía de Instalación (Linux y Windows)
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=ARtC+%E2%80%94+Gu%C3%ADa+de+Instalaci%C3%B3n+(Linux+y+Windows)" alt="Typing SVG" /></a>
 
 ---
 
@@ -14,7 +14,7 @@ Funciona tanto en Linux como en Windows 10/11.
 3. Instalación en Windows
 4. Estructura esperada del proyecto
 
-# 1. Contenidos generados por el instalador
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=1.+Contenidos+generados+por+el+instalador" alt="Typing SVG" /></a>
 
 ---
 
@@ -41,7 +41,7 @@ Cada instalador realiza lo siguiente:
 > [!warning]
 > La instalación puede crear varios cientos de MB de archivos. Aparte del Python local, se incluye un set de audios de prueba de varias fuentes. Todos ellos son de uso libre.
 
-# 2. Instalación en Linux
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=2.+Instalaci%C3%B3n+en+Linux" alt="Typing SVG" /></a>
 
 ---
 
@@ -96,7 +96,7 @@ Desactivar:
 deactivate
 ```
 
-# 3. Instalación en Windows
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=3.+Instalaci%C3%B3n+en+Windows" alt="Typing SVG" /></a>
 
 ---
 
@@ -146,7 +146,7 @@ CMD:
 .artc\Scripts\deactivate.bat
 ```
 
-# 4. Estructura esperada del proyecto
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=4.+Estructura+esperada+del+proyecto" alt="Typing SVG" /></a>
 
 ---
 
