@@ -38,13 +38,18 @@ Part of the ARtC (Audio Real-time Comparator) framework
 import gc
 import multiprocessing
 import os
-import resource
 from collections.abc import Sequence
 from functools import partial
 from typing import Callable
 
 import numpy as np
 import psutil
+
+# Optional 'resource' module (POSIX only)
+try:
+    import resource  # type: ignore[attr-defined]
+except ImportError:  # Windows
+    resource = None  # type: ignore[assignment]
 
 import artc.core.configurations as config
 from artc.core import analysis, errors
@@ -170,11 +175,21 @@ def _set_memory_limit() -> None:
 
     This uses `resource.setrlimit()` to restrict the address space (RLIMIT_AS)
     available to the current process, preventing excessive memory consumption
+
+    Note:
+        Memory-limit enforcement does not work on Windows because Windows sucks.
     """
+    # Skip on Windows or platforms without RLIMIT_AS
+    if resource is None or not hasattr(resource, "RLIMIT_AS"):
+        logger.warning(
+            "Memory limit enforcement via 'resource' is not supported on this platform, skipping"
+        )
+        return
+
     memory = _available_memory()
     try:
         resource.setrlimit(resource.RLIMIT_AS, (memory, resource.RLIM_INFINITY))
-    except Exception as exc:  # pragma: no cover
+    except Exception as exc:
         raise RuntimeError(
             "The memory configuration is not compatible with the operating system"
         ) from exc
