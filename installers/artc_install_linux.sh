@@ -92,8 +92,8 @@ echo "Active environment: $(python --version)"
 # 7) Install dependencies
 if [ -f "requirements.txt" ]; then
     echo "Installing dependencies..."
-    pip install --upgrade pip setuptools wheel
-    pip install -r requirements.txt
+    python -m pip install --upgrade pip setuptools wheel
+    python -m pip install -r requirements.txt
 else
     echo "No requirements.txt file found. Skipping dependency installation."
 fi
@@ -104,12 +104,7 @@ rm -rf "$PYTHON_SRC_DIR" "$PYTHON_TARBALL"
 
 # 9) Install local package
 echo "Installing local package..."
-
-if [ -f "setup.py" ]; then
-    pip install .
-else
-    echo "Warning: no setup.py found. Skipping package installation."
-fi
+python -m pip install .
 
 # Deactivate the virtual environment
 deactivate

@@ -86,8 +86,8 @@ Write-Host "Active environment: $(python --version)"
 # 7) Install dependencies
 if (Test-Path "requirements.txt") {
     Write-Host "Installing dependencies..."
-    pip install --upgrade pip setuptools wheel
-    pip install -r requirements.txt
+    python -m pip install --upgrade pip setuptools wheel
+    python -m pip install -r requirements.txt
 }
 else {
     Write-Host "No requirements.txt file found. Skipping dependency installation."
@@ -99,13 +99,7 @@ Remove-Item $PYTHON_ZIP -ErrorAction SilentlyContinue
 
 # 9) Install local package
 Write-Host "Installing local package..."
-
-if (Test-Path "setup.py") {
-    pip install .
-}
-else {
-    Write-Host "Warning: no setup.py found. Skipping package installation."
-}
+python -m pip install .
 
 # 10) Deactivate environment
 deactivate

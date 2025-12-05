@@ -14,12 +14,12 @@ authors = [
     { name = "Nicolás Cereijo Ranchal", email = "nicolascereijo.careers@protonmail.com" }
 ]
 keywords = ["audio", "analysis", "comparison", "real-time", "data collection"]
-urls = {
-    Homepage = "https://github.com/NicolasCereijo/artc"
-}
 
 # Dependencies are read from requirements.txt using dynamic metadata
 dynamic = ["dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/NicolasCereijo/artc"
 
 # Entry points (console scripts)
 [project.scripts]

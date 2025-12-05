@@ -49,7 +49,7 @@ sudo dnf install gcc make tar wget
 Run the Linux installer:
 
 ```bash
-./installers/artc-install-linux.sh
+./installers/artc_install_linux.sh
 ```
 
 If it does not have execution permissions:
