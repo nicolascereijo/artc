@@ -12,6 +12,9 @@ matplotlib==3.8.4
 psutil==6.1.1
 requests==2.32.3
 
+# TEMPORARY: required for demo scripts
+seaborn==0.13.2
+
 # Logging and testing tools
 colorlog==6.9.0
 pytest==8.3.4
