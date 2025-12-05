@@ -1,88 +1,109 @@
-# **ARtC — Guía de Instalación (Linux y Windows)**
-
-Este proyecto incluye instaladores locales que permiten configurar un entorno de Python 3.12 completamente aislado dentro del propio directorio del proyecto, sin modificar configuraciones del sistema operativo.
-
-El proceso es totalmente portable y funciona tanto en Linux como en Windows 10/11.
+# ARtC — Guía de Instalación (Linux y Windows)
 
 ---
 
-## Contenidos generados por el instalador
+ARtC proporciona instaladores locales que configuran un entorno aislado con
+Python 3.12.7 dentro del propio directorio del proyecto.
+**No modifica el Python del sistema ni configura variables globales**.
+
+Funciona tanto en Linux como en Windows 10/11.
+
+## Índice
+1. Contenidos generados por el instalador
+2. Instalación en Linux
+3. Instalación en Windows
+4. Estructura esperada del proyecto
+
+# 1. Contenidos generados por el instalador
+
+---
 
 Cada instalador realiza lo siguiente:
 
-1. Descarga una versión local de Python 3.12.x dentro del proyecto
-2. Crea un entorno virtual interno llamado `.artc`
-3. Instala dependencias desde `requirements.txt`
-4. Instala el propio paquete del proyecto usando `pip install .`
-5. Limpia archivos temporales
-6. No modifica ninguna configuración global del sistema
+1. Descarga una versión local de **Python 3.12.7**
+   - Linux: CPython completo compilado desde código fuente
+   - Windows: distribución *embeddable* con `import site` activado
+2. Instala `pip` cuando es necesario
+   - Obligatorio en Windows (mediante get-pip.py)
+3. Crea un entorno virtual local `.artc`
+   - Linux: `python -m venv`
+   - Windows: `virtualenv` (el Python embebido no soporta `venv`)
+4. Instala las dependencias desde `requirements.txt`
+5. Instala el paquete ARtC mediante `pip install .`
+6. Elimina archivos temporales de instalación
+7. No modifica ninguna configuración global del sistema operativo
+
+> [!note]
+> La instalación puede tardar varios minutos.
+> En Linux, Python debe compilarse desde código.
+> En Windows, el tiempo depende principalmente de la velocidad de descarga.
+
+> [!warning]
+> La instalación puede crear varios cientos de MB de archivos. Aparte del Python local, se incluye un set de audios de prueba de varias fuentes. Todos ellos son de uso libre.
+
+# 2. Instalación en Linux
 
 ---
 
-# **Instalación en Linux**
+## 2.1. Requisitos previos
 
-## Requisitos previos
-
-Es necesario tener instaladas estas herramientas:
+Son necesarios los siguientes componentes (herramientas habituales de compilación para construir Python desde código fuente):
 
 - gcc
 - make
 - tar
 - curl o wget
 
-En distribuciones basadas en Debian/Ubuntu:
+Debian/Ubuntu:
 
 ```bash
 sudo apt install build-essential curl
 ```
 
-En Fedora/RHEL:
+Fedora/RHEL:
 
 ```bash
 sudo dnf install gcc make tar wget
 ```
 
----
-
-## Instalación
-
-Ejecutar el instalador para Linux:
+Arch/Manjaro:
 
 ```bash
-./installers/artc_install_linux.sh
+sudo pacman -S --needed base-devel curl   # o reemplazar curl por wget
 ```
 
-Si no tiene permisos de ejecución:
+> [!caution]
+> Compilar Python puede tardar entre 2 y 10 minutos dependiendo del hardware.
+
+## 2.2. Instalación
+
+Dar permisos y ejecutar el instalador:
 
 ```bash
 chmod +x installers/artc_install_linux.sh
+./installers/artc_install_linux.sh
 ```
 
----
-
-## Activar el entorno virtual
+## 2.3. Activar el entorno virtual
 
 ```bash
 source .artc/bin/activate
 ```
 
-## Desactivar el entorno
+Desactivar:
 
 ```bash
 deactivate
 ```
 
----
-
-# **Instalación en Windows (10 y 11)**
-
-La instalación en Windows se realiza mediante un archivo `.bat`, que ejecuta el script PowerShell interno sin necesidad de cambiar las políticas de ejecución.
-
-No se requieren permisos de administrador.
+# 3. Instalación en Windows
 
 ---
 
-## Instalación
+El instalador **no requiere permisos de administrador**.
+El script usa un *ExecutionPolicy Bypass* temporal que no modifica el sistema.
+
+## 3.1. Instalación
 
 Ejecutar:
 
@@ -90,70 +111,57 @@ Ejecutar:
 installers\artc_install_windows.bat
 ```
 
-Este archivo lanzará automáticamente:
+Esto ejecuta automáticamente:
 
 ```
 installers\artc_install_windows_core.ps1
 ```
 
-con `ExecutionPolicy Bypass` aplicado solo durante esta ejecución.
+> [!note]
+> La descarga del Python embebido puede ser lenta en conexiones inestables.
 
----
+## 3.2. Activar el entorno virtual
 
-## Activar el entorno virtual
-
-En PowerShell:
+PowerShell:
 
 ```powershell
 .\.artc\Scripts\Activate.ps1
 ```
 
-En CMD:
+CMD:
 
 ```cmd
 .artc\Scripts\activate.bat
 ```
 
----
-
-## Desactivar el entorno
-
-En PowerShell:
+Desactivar en PowerShell:
 
 ```powershell
 deactivate
 ```
 
-En CMD:
+CMD:
 
 ```cmd
 .artc\Scripts\deactivate.bat
 ```
 
----
+# 4. Estructura esperada del proyecto
 
-# Estructura esperada del proyecto
+---
 
 ```
 artc/
 │
 ├─ installers/
-│   ├─ artc-install-linux.sh
+│   ├─ artc_install_linux.sh
 │   ├─ artc_install_windows.bat
 │   └─ artc_install_windows_core.ps1
 │
 ├─ python312/        ← Python local (auto-generado)
 ├─ .artc/            ← Entorno virtual (auto-generado)
 ├─ src/              ← Código fuente
-├─ setup.py          ← Instalación del paquete
+├─ test_collection/  ← Conjunto de audios de prueba
+├─ pyproject.toml    ← Configuración del paquete
 └─ requirements.txt  ← Dependencias
 ```
-
----
-
-# Notas importantes
-
-- Ningún instalador requiere permisos root/administrador.
-- No se altera el Python del sistema operativo.
-- En Windows no se cambia la política de ejecución global.
-- Todo el contenido generado vive dentro del proyecto y puede borrarse sin riesgo.
