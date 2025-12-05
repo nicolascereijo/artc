@@ -1,4 +1,4 @@
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=ARtC+%E2%80%94+Gu%C3%ADa+de+Instalaci%C3%B3n+(Linux+y+Windows)" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=657&lines=ARtC+%E2%80%94+Gu%C3%ADa+de+Instalaci%C3%B3n+(Linux+y+Windows)" alt="Typing SVG" /></a>
 
 ---
 
@@ -8,13 +8,13 @@ Python 3.12.7 dentro del propio directorio del proyecto.
 
 Funciona tanto en Linux como en Windows 10/11.
 
-## Índice
+**Índice**
 1. Contenidos generados por el instalador
 2. Instalación en Linux
 3. Instalación en Windows
 4. Estructura esperada del proyecto
 
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=1.+Contenidos+generados+por+el+instalador" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=650&lines=1.+Contenidos+generados+por+el+instalador" alt="Typing SVG" /></a>
 
 ---
 
@@ -41,11 +41,11 @@ Cada instalador realiza lo siguiente:
 > [!warning]
 > La instalación puede crear varios cientos de MB de archivos. Aparte del Python local, se incluye un set de audios de prueba de varias fuentes. Todos ellos son de uso libre.
 
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=2.+Instalaci%C3%B3n+en+Linux" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=650&lines=2.+Instalaci%C3%B3n+en+Linux" alt="Typing SVG" /></a>
 
 ---
 
-## 2.1. Requisitos previos
+**2.1. Requisitos previos**
 
 Son necesarios los siguientes componentes (herramientas habituales de compilación para construir Python desde código fuente):
 
@@ -75,7 +75,7 @@ sudo pacman -S --needed base-devel curl   # o reemplazar curl por wget
 > [!caution]
 > Compilar Python puede tardar entre 2 y 10 minutos dependiendo del hardware.
 
-## 2.2. Instalación
+**2.2. Instalación**
 
 Dar permisos y ejecutar el instalador:
 
@@ -84,7 +84,7 @@ chmod +x installers/artc_install_linux.sh
 ./installers/artc_install_linux.sh
 ```
 
-## 2.3. Activar el entorno virtual
+**2.3. Activar el entorno virtual**
 
 ```bash
 source .artc/bin/activate
@@ -96,14 +96,14 @@ Desactivar:
 deactivate
 ```
 
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=3.+Instalaci%C3%B3n+en+Windows" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=650&lines=3.+Instalaci%C3%B3n+en+Windows" alt="Typing SVG" /></a>
 
 ---
 
 El instalador **no requiere permisos de administrador**.
 El script usa un *ExecutionPolicy Bypass* temporal que no modifica el sistema.
 
-## 3.1. Instalación
+**3.1. Instalación**
 
 Ejecutar:
 
@@ -120,7 +120,7 @@ installers\artc_install_windows_core.ps1
 > [!note]
 > La descarga del Python embebido puede ser lenta en conexiones inestables.
 
-## 3.2. Activar el entorno virtual
+**3.2. Activar el entorno virtual**
 
 PowerShell:
 
@@ -146,7 +146,7 @@ CMD:
 .artc\Scripts\deactivate.bat
 ```
 
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=4.+Estructura+esperada+del+proyecto" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=650&lines=4.+Estructura+esperada+del+proyecto" alt="Typing SVG" /></a>
 
 ---
 

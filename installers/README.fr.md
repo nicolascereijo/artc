@@ -1,4 +1,4 @@
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=ARtC+%E2%80%94+Guide+d%E2%80%99installation+(Linux+%26+Windows)" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=672&lines=ARtC+%E2%80%94+Guide+d%E2%80%99installation+(Linux+%26+Windows)" alt="Typing SVG" /></a>
 
 ---
 
@@ -8,13 +8,13 @@ Python 3.12.7 dans le répertoire du projet.
 
 Il fonctionne aussi bien sous Linux que sous Windows 10/11.
 
-## Index
+**Index**
 1. Contenu généré par l’installateur
 2. Installation sous Linux
 3. Installation sous Windows
 4. Structure attendue du projet
 
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=1.+Contenu+g%C3%A9n%C3%A9r%C3%A9+par+l%E2%80%99installateur" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=650&lines=1.+Contenu+g%C3%A9n%C3%A9r%C3%A9+par+l%E2%80%99installateur" alt="Typing SVG" /></a>
 
 ---
 
@@ -43,11 +43,11 @@ Chaque installateur effectue les actions suivantes:
 > En plus de l’environnement Python local, un ensemble d’audios de test est inclus.
 > Tous les fichiers sont libres d’utilisation.
 
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=2.+Installation+sous+Linux" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=650&lines=2.+Installation+sous+Linux" alt="Typing SVG" /></a>
 
 ---
 
-## 2.1. Prérequis
+**2.1. Prérequis**
 
 Les composants suivants sont requis (outils standards pour compiler Python depuis le code source):
 
@@ -77,7 +77,7 @@ sudo pacman -S --needed base-devel curl   # ou remplacer curl par wget
 > [!caution]
 > Compiler Python peut prendre de 2 à 10 minutes selon le matériel.
 
-## 2.2. Installation
+**2.2. Installation**
 
 Donnez les permissions et exécutez l’installateur:
 
@@ -86,7 +86,7 @@ chmod +x installers/artc_install_linux.sh
 ./installers/artc_install_linux.sh
 ```
 
-## 2.3. Activer l’environnement virtuel
+**2.3. Activer l’environnement virtuel**
 
 ```bash
 source .artc/bin/activate
@@ -98,14 +98,14 @@ Désactiver:
 deactivate
 ```
 
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=3.+Installation+sous+Windows" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=650&lines=3.+Installation+sous+Windows" alt="Typing SVG" /></a>
 
 ---
 
 L’installateur **ne nécessite pas de droits administrateur**.
 Le script utilise un *ExecutionPolicy Bypass* temporaire qui ne modifie pas le système.
 
-## 3.1. Installation
+**3.1. Installation**
 
 Exécutez:
 
@@ -122,7 +122,7 @@ installers\artc_install_windows_core.ps1
 > [!note]
 > Le téléchargement du Python embeddable peut être lent en connexion instable.
 
-## 3.2. Activer l’environnement virtuel
+**3.2. Activer l’environnement virtuel**
 
 PowerShell:
 
@@ -148,7 +148,7 @@ CMD:
 .artc\Scripts\deactivate.bat
 ```
 
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=435&height=30&lines=4.+Structure+attendue+du+projet" alt="Typing SVG" /></a>
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=25&pause=1000&color=31F7E4&vCenter=true&width=650&lines=4.+Structure+attendue+du+projet" alt="Typing SVG" /></a>
 
 ---
 
