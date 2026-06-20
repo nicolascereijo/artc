@@ -299,6 +299,7 @@ def _compare_all_chunks(
     audio_2_chunks: list[NDArrayFloat],
     params: tuple,
     use_sr: bool,
+    same_signal: bool,
 ) -> list[FloatScalar]:
     """Execute all pairwise chunk-to-chunk comparisons between two audio signals
     Used as a sequential fallback when multiprocessing is disabled
@@ -306,11 +307,23 @@ def _compare_all_chunks(
     Each comparison produces a similarity score between 0 and 1 (or 0–100 if scaled later)
     The function iterates over the upper-triangular region of the chunk pairs
     to avoid redundant computations
+
+    When both chunk lists come from the same signal (same_signal=True), the
+    chunk-to-chunk similarity matrix is symmetric, so only the upper-triangular
+    region (including the diagonal) is computed to avoid redundant work.
+
+    When the two chunk lists come from different signals, there is no such
+    symmetry. Comparing chunk i of signal 1 against chunk j of signal 2 is not
+    equivalent to any other pair already computed, so every combination must be
+    evaluated.
     """
     similarity_scores: list[FloatScalar] = []
 
     for i, chunk_a in enumerate(audio_1_chunks):
-        for j in range(i, len(audio_2_chunks)):
+        j_range = (
+            range(i, len(audio_2_chunks)) if same_signal else range(len(audio_2_chunks))
+        )
+        for j in j_range:
             chunk_b = audio_2_chunks[j]
             if use_sr:
                 sr1, sr2 = params[3], params[4]
@@ -340,6 +353,16 @@ def _comparator_builder(
     If multiprocessing is disabled (max_processes == 1), comparisons are
     executed immediately using `_compare_all_chunks()` to provide a fully
     deterministic single-threaded fallback
+
+    Note on chunk pairing:
+        When `audio_1` and `audio_2` are the same signal (e.g. when computing
+        the diagonal of the similarity matrix), the chunk-to-chunk comparison
+        matrix is symmetric, so only the upper-triangular region is built to
+        avoid computing and storing redundant duplicate pairs.
+
+        When `audio_1` and `audio_2` are different signals, no such symmetry
+        exists. Pair (i, j) and pair (j, i) involve different chunk content on
+        each side, so every combination of chunks must be compared.
     """
     samples_per_chunk = config.read_config("sampling")
     processes = config.read_config("processes")
@@ -365,20 +388,30 @@ def _comparator_builder(
     use_sr = analysis.COMPARE_FUNCTIONS[metric]["use_sample_rate"]
     sr_args: tuple = (sr1, sr2) if use_sr else ()
 
+    # Same underlying signal compared with itself: the chunk-pair matrix is
+    # symmetric, so only the upper triangle (including the diagonal) is needed.
+    same_signal = audio_1 is audio_2
+
     # Sequential fallback (single process)
     if processes == 1:
         params: tuple = (compare_func, audio_1, audio_2, *sr_args)
         sequential_results = _compare_all_chunks(
-            compare_func, audio1_chunks, audio2_chunks, params, use_sr
+            compare_func, audio1_chunks, audio2_chunks, params, use_sr, same_signal
         )
         comparators_group = [lambda r=r: r for r in sequential_results]
 
     # Default: parallel deferred callables
-    else:
+    elif same_signal:
         comparators_group = [
             partial(compare_func, chunk_a, chunk_b, *sr_args)
             for i, chunk_a in enumerate(audio1_chunks)
             for chunk_b in audio2_chunks[i:]
+        ]
+    else:
+        comparators_group = [
+            partial(compare_func, chunk_a, chunk_b, *sr_args)
+            for chunk_a in audio1_chunks
+            for chunk_b in audio2_chunks
         ]
 
     return [comparators_group]

@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
-from pathlib import Path
 
 import artc.core.datastructures as dt_structs
 
@@ -128,29 +129,21 @@ def test_search_file(setup):
     _, _, data_set = setup
     test_set = dt_structs.WorkingSet("test_set", test_mode=True, data_set=data_set)
 
-    assert test_set.__contains__(
-        name=data_set["individual_files"][0].name, group="individual_files"
-    )
-    assert test_set.__contains__(
-        name=data_set["individual_files"][1].name, group="individual_files"
-    )
-    assert test_set.__contains__(
-        name=data_set["individual_files"][2].name, group="individual_files"
-    )
+    # Two calling forms are supported, "'name' in test_set", which checks the
+    # default group, and "('name', 'group') in test_set", which checks the
+    # given group.
 
-    assert test_set.__contains__(name="", group="") is False
+    assert data_set["individual_files"][0].name in test_set
+    assert data_set["individual_files"][1].name in test_set
+    assert data_set["individual_files"][2].name in test_set
+
+    assert (("", "") in test_set) is False
+    assert ((data_set["individual_files"][2].name, "") in test_set) is False
+    assert ("" in test_set) is False
     assert (
-        test_set.__contains__(name=data_set["individual_files"][2].name, group="")
-        is False
-    )
-    assert test_set.__contains__(name="", group="individual_files") is False
-    assert (
-        test_set.__contains__(
-            name=data_set["individual_files"][2].name, group="invalid_group"
-        )
-        is False
-    )
-    assert test_set.__contains__(name="invalid_file", group="individual_files") is False
+        (data_set["individual_files"][2].name, "invalid_group") in test_set
+    ) is False
+    assert ("invalid_file" in test_set) is False
 
 
 def test_add_file(setup):

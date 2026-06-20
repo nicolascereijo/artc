@@ -16,7 +16,7 @@ def calculate_beat_alignment(audio_signal: np.ndarray, sample_rate: float,
             hop_length (int): Number of samples between successive analysis frames.
 
         Returns:
-            np.ndarray: FFT of the binary beat activation sequence.
+            np.ndarray: FFT of the detected beat position sequence.
     """
     _, beats = beat_track(y=audio_signal, sr=sample_rate, hop_length=hop_length)
     return np.fft.fft(beats)
