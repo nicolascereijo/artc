@@ -19,7 +19,7 @@ keywords = ["audio", "analysis", "comparison", "real-time", "data collection"]
 dynamic = ["dependencies"]
 
 [project.urls]
-Homepage = "https://github.com/NicolasCereijo/artc"
+Homepage = "https://github.com/nicolascereijo/artc"
 
 # Entry points (console scripts)
 [project.scripts]
@@ -36,6 +36,7 @@ where = ["src"]
 # Include package data (replaces setup.py package_data)
 [tool.setuptools.package-data]
 "artc.core.configurations" = ["*.toml"]
+"artc.core.tests" = ["pytest.ini"]
 "artc.cli" = ["commands.json"]
 
 

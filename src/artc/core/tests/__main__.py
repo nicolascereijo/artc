@@ -35,7 +35,7 @@ def main(args=None):
     else:
         logger.critical("""
             Could not access configuration file, suite execution aborted. The
-            default_configurations.json file should be located in the /core/configurations/
+            artc_config.toml file should be located in the /core/configurations/
             folder. Check the directory and access permissions.
         """)
         sys.exit(1)

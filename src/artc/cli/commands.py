@@ -1,10 +1,11 @@
+import argparse
+import importlib.resources
+import json
 import os
 import sys
-import argparse
-import json
-import importlib.resources
+from collections.abc import Callable
 from logging import Logger
-from typing import Callable, TypedDict, cast
+from typing import TypedDict, cast
 
 from artc.core import tests
 
@@ -23,7 +24,7 @@ def about() -> None:
         Version: 1.0b4
         Author: Nicolás Cereijo Ranchal
         Author Email: nicolascereijo.careers@protonmail.com
-        URL: https://github.com/NicolasCereijo/artc
+        URL: https://github.com/nicolascereijo/artc
         License: MIT
 
         Development Status:
@@ -97,7 +98,7 @@ def parse_args(commands_path: str, *, logger: Logger) -> argparse.Namespace:
 
     try:
         return parser.parse_args()
-    except Exception:
+    except argparse.ArgumentError:
         logger.error("""
             Invalid command or arguments provided, please check the available commands.
             """)
@@ -128,13 +129,15 @@ def handle_command(command: str, *, command_args: list[str], logger: Logger) -> 
     """
 
     if command == "test":
+        pytest_ini_path = str(
+            importlib.resources.files("artc.core.tests") / "pytest.ini"
+        )
         test_main = cast(Callable[[list[str] | None], int], tests.main)
-        _ = test_main(["-c", "src/artc/core/tests/pytest.ini"] + command_args)
+        _ = test_main(["-c", pytest_ini_path] + command_args)
 
     elif command == "welcome":
         configuration_path = str(
-            importlib.resources.files("artc.core.configurations")
-            / "default_configurations.json"
+            importlib.resources.files("artc.core.configurations") / "artc_config.toml"
         )
 
         logger.info("""
@@ -150,7 +153,7 @@ def handle_command(command: str, *, command_args: list[str], logger: Logger) -> 
         if not os.access(configuration_path, os.R_OK):
             logger.critical(
                 """Could not access configuration file, suite execution aborted. The
-                default_configurations.json file should be located in the /core/configurations/
+                artc_config.toml file should be located in the /core/configurations/
                 folder. Check the directory and access permissions."""
             )
             sys.exit(1)
