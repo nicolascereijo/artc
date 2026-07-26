@@ -11,14 +11,16 @@ Part of the ARtC (Audio Real-time Comparator) framework
 
 import inspect
 from argparse import Namespace
+from collections.abc import Callable
 from functools import wraps
 from logging import Logger
-from typing import Any, Callable, Protocol, cast
+from typing import Any, Protocol, cast
 
 import numpy as np
 from numpy.typing import NDArray
 
 from artc.core.configurations import get_flags
+
 
 # ─────────────────────────────────────────────────────────────
 # CLI callables
