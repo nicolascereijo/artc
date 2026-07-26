@@ -13,7 +13,7 @@ import inspect
 from argparse import Namespace
 from functools import wraps
 from logging import Logger
-from typing import Any, Callable, cast
+from typing import Any, Callable, Protocol, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -23,8 +23,14 @@ from artc.core.configurations import get_flags
 # ─────────────────────────────────────────────────────────────
 # CLI callables
 # ─────────────────────────────────────────────────────────────
-ParseArgsFn = Callable[[str, Logger], Namespace]
-HandleCommandFn = Callable[[str, list[str], Logger], None]
+class ParseArgsFn(Protocol):
+    def __call__(self, commands_path: str, *, logger: Logger) -> Namespace: ...
+
+
+class HandleCommandFn(Protocol):
+    def __call__(
+        self, command: str, *, command_args: list[str], logger: Logger
+    ) -> None: ...
 
 
 # ─────────────────────────────────────────────────────────────

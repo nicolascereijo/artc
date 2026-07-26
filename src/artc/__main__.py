@@ -25,11 +25,11 @@ def main() -> None:
     parse_args = cast(ParseArgsFn, cli.parse_args)
     handle_command = cast(HandleCommandFn, cli.handle_command)
 
-    parsed_args = parse_args(commands_path, logger)
+    parsed_args = parse_args(commands_path, logger=logger)
     command = getattr(parsed_args, "command", "")
     command_args = getattr(parsed_args, "command_args", [])
 
-    handle_command(command, command_args, logger)
+    handle_command(command, command_args=command_args, logger=logger)
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ def setup():
         data_path = current_path.parent / "tests" / "fixtures"
         config_path = current_path.parent / "configurations"
 
-    return config_path, "default_configurations.json", data_path
+    return config_path, "artc_config.toml", data_path
 
 
 # --------------------------------------------------------------------------------------------------

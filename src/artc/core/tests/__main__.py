@@ -12,7 +12,7 @@ def main(args=None):
         args = sys.argv[1:]
 
     configuration_path = str(
-        importlib.resources.files("artc.core.configurations") / "artc_config.json"
+        importlib.resources.files("artc.core.configurations") / "artc_config.toml"
     )
     logger = errors.logger_config.LoggerSingleton().get_logger()
 

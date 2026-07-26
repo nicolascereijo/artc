@@ -15,12 +15,12 @@ def setup():
         config_path = (
             current_path.parent.parent
             / "configurations"
-            / "default_configurations.json"
+            / "artc_config.toml"
         )
     else:
         data_path = current_path.parent / "tests" / "fixtures"
         config_path = (
-            current_path.parent / "configurations" / "default_configurations.json"
+            current_path.parent / "configurations" / "artc_config.toml"
         )
 
     data_set = {

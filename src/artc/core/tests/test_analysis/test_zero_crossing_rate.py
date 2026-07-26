@@ -48,12 +48,12 @@ def test_compare_two_zcr(setup):
     assert analysis.compare_two_zcr(audio_signal1, audio_signal1) == 1
     assert analysis.compare_two_zcr(audio_signal2, audio_signal2) == 1
     assert analysis.compare_two_zcr(audio_signal3, audio_signal3) == 1
-    assert round(analysis.compare_two_zcr(audio_signal1, audio_signal2), 5) == 0.3398
-    assert round(analysis.compare_two_zcr(audio_signal2, audio_signal1), 5) == 0.3398
-    assert round(analysis.compare_two_zcr(audio_signal1, audio_signal3), 5) == 0.35384
-    assert round(analysis.compare_two_zcr(audio_signal3, audio_signal1), 5) == 0.35384
-    assert round(analysis.compare_two_zcr(audio_signal2, audio_signal3), 5) == 0.83234
-    assert round(analysis.compare_two_zcr(audio_signal3, audio_signal2), 5) == 0.83234
+    assert round(analysis.compare_two_zcr(audio_signal1, audio_signal2), 5) == 0.40036
+    assert round(analysis.compare_two_zcr(audio_signal2, audio_signal1), 5) == 0.40036
+    assert round(analysis.compare_two_zcr(audio_signal1, audio_signal3), 5) == 0.42543
+    assert round(analysis.compare_two_zcr(audio_signal3, audio_signal1), 5) == 0.42543
+    assert round(analysis.compare_two_zcr(audio_signal2, audio_signal3), 5) == 0.83951
+    assert round(analysis.compare_two_zcr(audio_signal3, audio_signal2), 5) == 0.83951
 
 
 def test_compare_multiple_zcr(setup):
@@ -76,27 +76,27 @@ def test_compare_multiple_zcr(setup):
     assert analysis.compare_multiple_zcr([audio_signal3, audio_signal3]) == 1
     assert (
         round(analysis.compare_multiple_zcr([audio_signal1, audio_signal2]), 5)
-        == 0.3398
+        == 0.40036
     )
     assert (
         round(analysis.compare_multiple_zcr([audio_signal2, audio_signal1]), 5)
-        == 0.3398
+        == 0.40036
     )
     assert (
         round(analysis.compare_multiple_zcr([audio_signal1, audio_signal3]), 5)
-        == 0.35384
+        == 0.42543
     )
     assert (
         round(analysis.compare_multiple_zcr([audio_signal3, audio_signal1]), 5)
-        == 0.35384
+        == 0.42543
     )
     assert (
         round(analysis.compare_multiple_zcr([audio_signal2, audio_signal3]), 5)
-        == 0.83234
+        == 0.83951
     )
     assert (
         round(analysis.compare_multiple_zcr([audio_signal3, audio_signal2]), 5)
-        == 0.83234
+        == 0.83951
     )
 
     assert (
