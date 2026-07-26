@@ -24,14 +24,17 @@ def main():
         / "artc_config.toml"
     )
     files_path = current_path.parent / "test_collection" / "TEMPORARY_sample_selection"
+    # files_path = current_path.parent / "test_collection" / "TEMPORARY_papper_selection"
 
     results_dir = current_path.parent / "TEMPORARY_demo_results"
+    # results_dir = current_path.parent / "TEMPORARY_papper_results"
     results_dir.mkdir(exist_ok=True)
 
     example_set = dt_structs.WorkingSet("main_set")
     example_set.add_directory(
         path=files_path, configuration_path=configuration_path, group="main_set"
     )
+    n_audios = len(example_set.working_set["main_set"])
 
     metric_names = analysis.get_metric_names()
 
@@ -45,7 +48,7 @@ def main():
         for stat in results:
             stat_name = stat[0]
             result_array = np.array(stat[1])
-            result_array = result_array.reshape(24, 24)
+            result_array = result_array.reshape(n_audios, n_audios)
 
             viridis = colormaps.get_cmap("viridis")
             newcolors = viridis(np.linspace(0, 1, 256))
@@ -60,8 +63,8 @@ def main():
                 annot=True,
                 cbar=True,
                 fmt=".2f",
-                xticklabels=[str(i) for i in range(1, 25)],
-                yticklabels=[str(i) for i in range(1, 25)],
+                xticklabels=[str(i) for i in range(1, result_array.shape[1] + 1)],
+                yticklabels=[str(i) for i in range(1, result_array.shape[0] + 1)],
                 vmin=-1,
                 vmax=100,
             )
