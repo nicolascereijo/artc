@@ -40,7 +40,7 @@ where = ["src"]
 # Include package data (replaces setup.py package_data)
 [tool.setuptools.package-data]
 "artc.core.configurations" = ["*.toml"]
-"artc.core.tests" = ["pytest.ini"]
+"artc.core.tests" = ["pytest.ini", "fixtures/*.mp3", "fixtures/*.wav"]
 "artc.cli" = ["commands.json"]
 
 

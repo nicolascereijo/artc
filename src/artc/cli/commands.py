@@ -5,6 +5,7 @@ import os
 import sys
 from collections.abc import Callable
 from logging import Logger
+from pathlib import Path
 from typing import TypedDict, cast
 
 
@@ -129,11 +130,21 @@ def handle_command(command: str, *, command_args: list[str], logger: Logger) -> 
     if command == "test":
         from artc.core import tests
 
-        pytest_ini_path = str(
-            importlib.resources.files("artc.core.tests") / "pytest.ini"
-        )
+        tests_dir = importlib.resources.files("artc.core.tests")
+        pytest_ini_path = str(tests_dir / "pytest.ini")
+        report_path = Path.cwd() / "reports" / "report.xml"
+
         test_main = cast(Callable[[list[str] | None], int], tests.main)
-        _ = test_main(["-c", pytest_ini_path] + command_args)
+        exit_code = test_main(
+            [
+                "-c",
+                pytest_ini_path,
+                str(tests_dir),
+                f"--junitxml={report_path}",
+            ]
+            + command_args
+        )
+        sys.exit(exit_code)
 
     elif command == "welcome":
         configuration_path = str(
