@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import zero_crossing_rate
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_zcr(
     audio_signal: np.ndarray, /, *, frame_length: int = 2048, hop_length: int = 512
@@ -69,9 +71,7 @@ def compare_two_zcr(
         zcr2_clipped / zcr2_clipped.max() if zcr2_clipped.max() > 0 else zcr2_clipped
     )
 
-    min_len = min(zcr1_normalized.shape[1], zcr2_normalized.shape[1])
-    zcr1_adjusted = zcr1_normalized[:, :min_len]
-    zcr2_adjusted = zcr2_normalized[:, :min_len]
+    zcr1_adjusted, zcr2_adjusted = adjust_dimensions(zcr1_normalized, zcr2_normalized)
 
     relative_difference = np.abs(zcr1_adjusted - zcr2_adjusted) / (
         np.abs(zcr1_adjusted) + np.abs(zcr2_adjusted) + 1e-8
@@ -96,9 +96,6 @@ def compare_multiple_zcr(
 
     Returns:
         float: Mean similarity score across all unique pairwise comparisons.
-
-    Raises:
-        ValueError: If fewer than two signals are provided.
 
     See Also:
         compare_two_zcr

@@ -2,6 +2,8 @@ import numpy as np
 from librosa.feature import tempogram
 from librosa.onset import onset_strength
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_harmonic_tempogram(audio_signal: np.ndarray, sample_rate: float,
                                  /, *, hop_length: int = 512) -> np.ndarray:
@@ -49,9 +51,9 @@ def compare_two_harmonic_tempogram(signal1: np.ndarray, signal2: np.ndarray,
     harmonic_tempogram1 = calculate_harmonic_tempogram(signal1, sample_rate1, hop_length=hop_length)
     harmonic_tempogram2 = calculate_harmonic_tempogram(signal2, sample_rate2, hop_length=hop_length)
 
-    min_len = min(harmonic_tempogram1.shape[1], harmonic_tempogram2.shape[1])
-    harmonic_tempogram1_adjusted = harmonic_tempogram1[:, :min_len]
-    harmonic_tempogram2_adjusted = harmonic_tempogram2[:, :min_len]
+    harmonic_tempogram1_adjusted, harmonic_tempogram2_adjusted = adjust_dimensions(
+        harmonic_tempogram1, harmonic_tempogram2
+    )
 
     distance = np.linalg.norm(np.abs(harmonic_tempogram1_adjusted) -
                               np.abs(harmonic_tempogram2_adjusted))

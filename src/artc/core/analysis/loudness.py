@@ -1,6 +1,8 @@
 import numpy as np
 import librosa
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_loudness(audio_signal: np.ndarray, sample_rate: float) -> np.ndarray:
     """
@@ -45,9 +47,7 @@ def compare_two_loudness(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
     loudness1 = calculate_loudness(audio_signal1, sample_rate1)
     loudness2 = calculate_loudness(audio_signal2, sample_rate2)
 
-    min_len = min(loudness1.shape[1], loudness2.shape[1])
-    loudness1_adjusted = loudness1[:, :min_len]
-    loudness2_adjusted = loudness2[:, :min_len]
+    loudness1_adjusted, loudness2_adjusted = adjust_dimensions(loudness1, loudness2)
 
     distance = np.linalg.norm(loudness1_adjusted - loudness2_adjusted)
     max_distance = (np.linalg.norm(loudness1_adjusted) +

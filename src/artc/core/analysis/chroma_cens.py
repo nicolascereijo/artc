@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import chroma_cens
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_chroma_cens(audio_signal: np.ndarray, sample_rate: float,
                           /, *, hop_length: int = 512) -> np.ndarray:
@@ -47,9 +49,9 @@ def compare_two_chroma_cens(signal1: np.ndarray, signal2: np.ndarray,
     chroma_cens1 = calculate_chroma_cens(signal1, sample_rate1, hop_length=hop_length)
     chroma_cens2 = calculate_chroma_cens(signal2, sample_rate2, hop_length=hop_length)
 
-    min_len = min(chroma_cens1.shape[1], chroma_cens2.shape[1])
-    chroma_cens1_adjusted = chroma_cens1[:, :min_len]
-    chroma_cens2_adjusted = chroma_cens2[:, :min_len]
+    chroma_cens1_adjusted, chroma_cens2_adjusted = adjust_dimensions(
+        chroma_cens1, chroma_cens2
+    )
 
     distance = np.linalg.norm(np.abs(chroma_cens1_adjusted) -
                               np.abs(chroma_cens2_adjusted))

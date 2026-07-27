@@ -8,7 +8,7 @@ def check_path_accessible(path: Path) -> bool:
     try:
         _ = list(path.iterdir())
         return path.exists()
-    except (PermissionError, FileNotFoundError):
+    except (PermissionError, FileNotFoundError, NotADirectoryError):
         return False
 
 

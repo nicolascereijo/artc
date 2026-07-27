@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import tempogram
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_tempogram(audio_signal: np.ndarray, sample_rate: float,
                         /, *, hop_length: int = 512) -> np.ndarray:
@@ -47,9 +49,7 @@ def compare_two_tempogram(signal1: np.ndarray, signal2: np.ndarray,
     tempogram1 = calculate_tempogram(signal1, sample_rate1, hop_length=hop_length)
     tempogram2 = calculate_tempogram(signal2, sample_rate2, hop_length=hop_length)
 
-    min_len = min(tempogram1.shape[1], tempogram2.shape[1])
-    tempogram1_adjusted = tempogram1[:, :min_len]
-    tempogram2_adjusted = tempogram2[:, :min_len]
+    tempogram1_adjusted, tempogram2_adjusted = adjust_dimensions(tempogram1, tempogram2)
 
     distance = np.linalg.norm(np.abs(tempogram1_adjusted) -
                               np.abs(tempogram2_adjusted))

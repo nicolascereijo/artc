@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import mfcc
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_mfcc(audio_signal: np.ndarray, sample_rate: float,
                    /, *, n_fft: int = 8192) -> np.ndarray:
@@ -45,9 +47,7 @@ def compare_two_mfcc(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
     mfcc1 = np.fft.fft(calculate_mfcc(audio_signal1, sample_rate1, n_fft=n_fft))
     mfcc2 = np.fft.fft(calculate_mfcc(audio_signal2, sample_rate2, n_fft=n_fft))
 
-    min_len = min(mfcc1.shape[1], mfcc2.shape[1])
-    mfcc1_adjusted = mfcc1[:, :min_len]
-    mfcc2_adjusted = mfcc2[:, :min_len]
+    mfcc1_adjusted, mfcc2_adjusted = adjust_dimensions(mfcc1, mfcc2)
 
     distance = np.linalg.norm(mfcc1_adjusted - mfcc2_adjusted)
     max_distance = (np.linalg.norm(mfcc1_adjusted) +

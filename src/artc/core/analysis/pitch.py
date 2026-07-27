@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.core import piptrack
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_pitch(audio_signal: np.ndarray, sample_rate: float,
                     /, *, n_fft: int = 8192) -> np.ndarray:
@@ -47,9 +49,7 @@ def compare_two_pitch(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
     pitch1 = calculate_pitch(audio_signal1, sample_rate1, n_fft=n_fft)
     pitch2 = calculate_pitch(audio_signal2, sample_rate2, n_fft=n_fft)
 
-    min_len = min(len(pitch1), len(pitch2))
-    pitch1_adjusted = pitch1[:min_len]
-    pitch2_adjusted = pitch2[:min_len]
+    pitch1_adjusted, pitch2_adjusted = adjust_dimensions(pitch1, pitch2)
 
     distance = np.linalg.norm(pitch1_adjusted - pitch2_adjusted)
     max_distance = (np.linalg.norm(pitch1_adjusted) +

@@ -1,6 +1,8 @@
 import numpy as np
 import librosa
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_peak_matching(audio_signal: np.ndarray, sample_rate: float,
                             /, *, n_fft: int = 4096) -> tuple[np.ndarray, np.ndarray]:
@@ -66,12 +68,8 @@ def compare_two_peak_matching(audio_signal1: np.ndarray, audio_signal2: np.ndarr
     peak_freq1, peak_mag1 = calculate_peak_matching(audio_signal1, sample_rate1, n_fft=n_fft)
     peak_freq2, peak_mag2 = calculate_peak_matching(audio_signal2, sample_rate2, n_fft=n_fft)
 
-    min_len_freq = min(len(peak_freq1), len(peak_freq2))
-    min_len_mag = min(len(peak_mag1), len(peak_mag2))
-    peak_freq1_adjusted = peak_freq1[:min_len_freq]
-    peak_freq2_adjusted = peak_freq2[:min_len_freq]
-    peak_mag1_adjusted = peak_mag1[:min_len_mag]
-    peak_mag2_adjusted = peak_mag2[:min_len_mag]
+    peak_freq1_adjusted, peak_freq2_adjusted = adjust_dimensions(peak_freq1, peak_freq2)
+    peak_mag1_adjusted, peak_mag2_adjusted = adjust_dimensions(peak_mag1, peak_mag2)
 
     distance_freq = np.linalg.norm(np.abs(peak_freq1_adjusted - peak_freq2_adjusted))
     max_distance_freq = (np.linalg.norm(np.abs(peak_freq1_adjusted)) +

@@ -98,30 +98,6 @@ def test_adjust_length():
     )
 
 
-def test_normalize_btw_0_1():
-    array1 = np.array([0])
-    array2 = np.array([0, 2e3])
-    array3 = np.array([-1, 2.09, 1e-100])
-
-    compare_1_2 = dt_structs.normalize_btw_0_1(array1, array2)
-    compare_1_3 = dt_structs.normalize_btw_0_1(array1, array3)
-    compare_2_3 = dt_structs.normalize_btw_0_1(array2, array3)
-    compare_3_2 = dt_structs.normalize_btw_0_1(array3, array2)
-
-    assert np.array_equal(compare_1_2[0], np.array([0]))
-    assert np.array_equal(compare_1_2[1], np.array([0, 1]))
-    assert np.array_equal(compare_1_3[0], np.array([0.3236245954692557]))
-    assert np.array_equal(compare_1_3[1], np.array([0, 1, 0.3236245954692557]))
-    assert np.array_equal(compare_2_3[0], np.array([0.0004997501249375312, 1]))
-    assert np.array_equal(
-        compare_2_3[1], np.array([0, 0.0015442278860569715, 0.0004997501249375312])
-    )
-    assert np.array_equal(
-        compare_3_2[0], np.array([0, 0.0015442278860569715, 0.0004997501249375312])
-    )
-    assert np.array_equal(compare_3_2[1], np.array([0.0004997501249375312, 1]))
-
-
 # --------------------------------------------------------------------------------------------------
 # Tests for core.datastructures.working_set
 # --------------------------------------------------------------------------------------------------

@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import spectral_centroid
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_spectral_centroid(audio_signal: np.ndarray, sample_rate: float,
                                 /, *, n_fft: int = 4096) -> np.ndarray:
@@ -47,9 +49,7 @@ def compare_two_spectral_centroid(audio_signal1: np.ndarray, audio_signal2: np.n
     centroid_1 = calculate_spectral_centroid(audio_signal1, sample_rate1, n_fft=n_fft)
     centroid_2 = calculate_spectral_centroid(audio_signal2, sample_rate2, n_fft=n_fft)
 
-    min_len = min(centroid_1.shape[1], centroid_2.shape[1])
-    centroid_1_adjusted = centroid_1[:, :min_len]
-    centroid_2_adjusted = centroid_2[:, :min_len]
+    centroid_1_adjusted, centroid_2_adjusted = adjust_dimensions(centroid_1, centroid_2)
 
     distance = np.linalg.norm(np.abs(centroid_1_adjusted) -
                               np.abs(centroid_2_adjusted))

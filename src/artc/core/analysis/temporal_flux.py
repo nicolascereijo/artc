@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.onset import onset_strength
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_temporal_flux(audio_signal: np.ndarray, sample_rate: float,
                             /, *, hop_length: int = 8192) -> np.ndarray:
@@ -47,9 +49,7 @@ def compare_two_temporal_flux(audio_signal1: np.ndarray, audio_signal2: np.ndarr
     flux_1 = calculate_temporal_flux(audio_signal1, sample_rate1, hop_length=hop_length)
     flux_2 = calculate_temporal_flux(audio_signal2, sample_rate2, hop_length=hop_length)
 
-    min_len = min(flux_1.shape[0], flux_2.shape[0])
-    flux_1_adjusted = flux_1[:min_len]
-    flux_2_adjusted = flux_2[:min_len]
+    flux_1_adjusted, flux_2_adjusted = adjust_dimensions(flux_1, flux_2)
 
     distance = np.linalg.norm(np.abs(flux_1_adjusted) -
                               np.abs(flux_2_adjusted))

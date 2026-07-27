@@ -12,8 +12,9 @@ class LoggerSingleton:
         return cls._instance
 
     def _setup_logger(self):
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("artc")
         self.logger.setLevel(logging.INFO)
+        self.logger.propagate = False
 
         if not self.logger.hasHandlers():
             handler = logging.StreamHandler()

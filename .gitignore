@@ -37,8 +37,8 @@ MANIFEST
 # Test results
 .pytest_cache/
 .tox/
-reports/*
-!reports/.gitkeep
+**/reports/*
+!**/reports/.gitkeep
 coverage/
 htmlcov/
 *.cover

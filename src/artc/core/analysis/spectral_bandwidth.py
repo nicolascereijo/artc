@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import spectral_bandwidth
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_spectral_bandwidth(audio_signal: np.ndarray, sample_rate: float,
                                  /, *, n_fft: int = 4096) -> np.ndarray:
@@ -46,9 +48,7 @@ def compare_two_spectral_bandwidth(audio_signal1: np.ndarray, audio_signal2: np.
     bandwidth_1 = calculate_spectral_bandwidth(audio_signal1, sample_rate1, n_fft=n_fft)
     bandwidth_2 = calculate_spectral_bandwidth(audio_signal2, sample_rate2, n_fft=n_fft)
 
-    min_len = min(bandwidth_1.shape[1], bandwidth_2.shape[1])
-    bandwidth_1_adjusted = bandwidth_1[:, :min_len]
-    bandwidth_2_adjusted = bandwidth_2[:, :min_len]
+    bandwidth_1_adjusted, bandwidth_2_adjusted = adjust_dimensions(bandwidth_1, bandwidth_2)
 
     distance = np.linalg.norm(np.abs(bandwidth_1_adjusted) -
                               np.abs(bandwidth_2_adjusted))

@@ -1,6 +1,8 @@
 import numpy as np
 from librosa import stft
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_spectrogram(audio_signal: np.ndarray,
                           /, *, n_fft: int = 4096) -> np.ndarray:
@@ -43,9 +45,9 @@ def compare_two_spectrogram(audio_signal1: np.ndarray, audio_signal2: np.ndarray
     spectrogram_1 = calculate_spectrogram(audio_signal1, n_fft=n_fft)
     spectrogram_2 = calculate_spectrogram(audio_signal2, n_fft=n_fft)
 
-    min_len = min(spectrogram_1.shape[1], spectrogram_2.shape[1])
-    spectrogram_1_adjusted = spectrogram_1[:, :min_len]
-    spectrogram_2_adjusted = spectrogram_2[:, :min_len]
+    spectrogram_1_adjusted, spectrogram_2_adjusted = adjust_dimensions(
+        spectrogram_1, spectrogram_2
+    )
 
     distance = np.linalg.norm(np.abs(spectrogram_1_adjusted) -
                               np.abs(spectrogram_2_adjusted))

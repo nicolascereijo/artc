@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.onset import onset_strength
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_onset_detection(audio_signal: np.ndarray, sample_rate: float,
                               /, *, hop_length: int = 8192) -> np.ndarray:
@@ -46,9 +48,7 @@ def compare_two_onset_detection(audio_signal1: np.ndarray, audio_signal2: np.nda
     onset_env1 = calculate_onset_detection(audio_signal1, sample_rate1, hop_length=hop_length)
     onset_env2 = calculate_onset_detection(audio_signal2, sample_rate2, hop_length=hop_length)
 
-    min_len = min(onset_env1.shape[0], onset_env2.shape[0])
-    onset_env1_adjusted = onset_env1[:min_len]
-    onset_env2_adjusted = onset_env2[:min_len]
+    onset_env1_adjusted, onset_env2_adjusted = adjust_dimensions(onset_env1, onset_env2)
 
     distance = np.linalg.norm(onset_env1_adjusted - onset_env2_adjusted)
     max_distance = (np.linalg.norm(onset_env1_adjusted) +

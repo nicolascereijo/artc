@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import spectral_rolloff
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_spectral_roll_off(audio_signal: np.ndarray, sample_rate: float,
                                 /, *, n_fft: int = 512, roll_percent: float = 0.5) -> np.ndarray:
@@ -52,9 +54,7 @@ def compare_two_spectral_roll_off(audio_signal1: np.ndarray, audio_signal2: np.n
     roll_off_2 = calculate_spectral_roll_off(
         audio_signal2, sample_rate2, n_fft=n_fft, roll_percent=roll_percent)
 
-    min_len = min(roll_off_1.shape[1], roll_off_2.shape[1])
-    roll_off_1_adjusted = roll_off_1[:, :min_len]
-    roll_off_2_adjusted = roll_off_2[:, :min_len]
+    roll_off_1_adjusted, roll_off_2_adjusted = adjust_dimensions(roll_off_1, roll_off_2)
 
     distance = np.linalg.norm(np.abs(roll_off_1_adjusted) -
                               np.abs(roll_off_2_adjusted))

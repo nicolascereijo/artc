@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import chroma_stft
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_chroma_stft(audio_signal: np.ndarray, sample_rate: float,
                           /, *, n_fft: int = 2048) -> np.ndarray:
@@ -47,9 +49,7 @@ def compare_two_chroma_stft(audio_signal1: np.ndarray, audio_signal2: np.ndarray
     chroma_1 = calculate_chroma_stft(audio_signal1, sample_rate1, n_fft=n_fft)
     chroma_2 = calculate_chroma_stft(audio_signal2, sample_rate2, n_fft=n_fft)
 
-    min_len = min(chroma_1.shape[1], chroma_2.shape[1])
-    matrix1_fft_adjusted = chroma_1[:, :min_len]
-    matrix2_fft_adjusted = chroma_2[:, :min_len]
+    matrix1_fft_adjusted, matrix2_fft_adjusted = adjust_dimensions(chroma_1, chroma_2)
 
     distance = np.linalg.norm(np.abs(matrix1_fft_adjusted) -
                               np.abs(matrix2_fft_adjusted))

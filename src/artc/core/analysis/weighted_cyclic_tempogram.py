@@ -2,6 +2,8 @@ import numpy as np
 from librosa.onset import onset_strength
 from librosa.feature import tempogram
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_wct(audio_signal: np.ndarray, sample_rate: float,
                   /, *, hop_length: int = 512) -> np.ndarray:
@@ -50,9 +52,9 @@ def compare_two_wct(signal1: np.ndarray, signal2: np.ndarray,
     cyclic_tempogram1 = calculate_wct(signal1, sample_rate1, hop_length=hop_length)
     cyclic_tempogram2 = calculate_wct(signal2, sample_rate2, hop_length=hop_length)
 
-    min_len = min(cyclic_tempogram1.shape[1], cyclic_tempogram2.shape[1])
-    cyclic_tempogram1_adjusted = cyclic_tempogram1[:, :min_len]
-    cyclic_tempogram2_adjusted = cyclic_tempogram2[:, :min_len]
+    cyclic_tempogram1_adjusted, cyclic_tempogram2_adjusted = adjust_dimensions(
+        cyclic_tempogram1, cyclic_tempogram2
+    )
 
     distance = np.linalg.norm(np.abs(cyclic_tempogram1_adjusted) -
                               np.abs(cyclic_tempogram2_adjusted))

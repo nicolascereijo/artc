@@ -7,8 +7,6 @@ from collections.abc import Callable
 from logging import Logger
 from typing import TypedDict, cast
 
-from artc.core import tests
-
 
 class _CommandsConfig(TypedDict, total=False):
     commands: list[str]
@@ -129,6 +127,8 @@ def handle_command(command: str, *, command_args: list[str], logger: Logger) -> 
     """
 
     if command == "test":
+        from artc.core import tests
+
         pytest_ini_path = str(
             importlib.resources.files("artc.core.tests") / "pytest.ini"
         )

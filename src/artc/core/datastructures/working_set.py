@@ -1,10 +1,11 @@
 import os
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Optional
 
 import librosa
 import numpy as np
+from audioread.exceptions import DecodeError
 
 from .. import errors
 
@@ -67,17 +68,27 @@ class AudioFile:
 class WorkingSet:
     name: str
 
-    def __init__(self, name: str, /, *, test_mode: bool = False, data_set: dict = {}):
+    def __init__(
+        self,
+        name: str,
+        /,
+        *,
+        test_mode: bool = False,
+        data_set: dict | None = None,
+    ):
         self.name = name
 
         if not test_mode:
             self.working_set = {"individual_files": []}
         else:
-            self.working_set = data_set
+            self.working_set = data_set if data_set is not None else {"individual_files": []}
 
-    def __getitem__(
-        self, name: str, group: str = "individual_files", /
-    ) -> Optional[AudioFile]:
+    def __getitem__(self, item: str | tuple[str, str], /) -> AudioFile | None:
+        if isinstance(item, tuple):
+            name, group = item
+        else:
+            name, group = item, "individual_files"
+
         if group not in self.working_set:
             logger.error(
                 f"No group with name '{group}' was found in working set '{self.name}'"
@@ -116,11 +127,9 @@ class WorkingSet:
         else:
             name, group = item, "individual_files"
 
-        if group not in self.working_set or name not in [
+        return group in self.working_set and name in [
             audio.name for audio in self.working_set[group]
-        ]:
-            return False
-        return True
+        ]
 
     def add_file(
         self,
@@ -134,7 +143,16 @@ class WorkingSet:
             logger.error(f"Path '{path / name}' does not exist or is not accessible")
             return False
 
-        audio_signal, sample_rate = librosa.load(path / name)
+        try:
+            # DecodeError: audioread (librosa's fallback backend) failed to decode
+            # the file (e.g. corrupted content, unsupported codec).
+            # OSError: raised directly by some audioread backends (ffdec, macca)
+            # for a missing/unreadable file, bypassing DecodeError entirely.
+            audio_signal, sample_rate = librosa.load(path / name)
+        except (DecodeError, OSError) as e:
+            logger.error(f"Could not load audio file '{name}': {e}")
+            return False
+
         audio = AudioFile(
             path=path,
             name=name,
@@ -206,13 +224,12 @@ class WorkingSet:
             return False
 
         for file_name in sorted(os.listdir(path), key=str.lower):
-            if os.path.isfile(os.path.join(path, file_name)):
-                if self.add_file(
-                    path=path,
-                    name=file_name,
-                    configuration_path=configuration_path,
-                    group=group,
-                ):
-                    any_files_added = True
+            if os.path.isfile(os.path.join(path, file_name)) and self.add_file(
+                path=path,
+                name=file_name,
+                configuration_path=configuration_path,
+                group=group,
+            ):
+                any_files_added = True
 
         return any_files_added

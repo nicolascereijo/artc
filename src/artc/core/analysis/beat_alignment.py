@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.beat import beat_track
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_beat_alignment(audio_signal: np.ndarray, sample_rate: float,
                              /, *, hop_length: int = 1024) -> np.ndarray:
@@ -47,9 +49,7 @@ def compare_two_beat_alignment(audio_signal1: np.ndarray, audio_signal2: np.ndar
     beats_1 = calculate_beat_alignment(audio_signal1, sample_rate1, hop_length=hop_length)
     beats_2 = calculate_beat_alignment(audio_signal2, sample_rate2, hop_length=hop_length)
 
-    min_len = min(beats_1.shape[0], beats_2.shape[0])
-    beats_1_adjusted = beats_1[:min_len]
-    beats_2_adjusted = beats_2[:min_len]
+    beats_1_adjusted, beats_2_adjusted = adjust_dimensions(beats_1, beats_2)
 
     distance = np.linalg.norm(np.abs(beats_1_adjusted) -
                               np.abs(beats_2_adjusted))

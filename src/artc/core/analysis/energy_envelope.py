@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import rms
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_energy_envelope(audio_signal: np.ndarray,
                               /, *, hop_length: int = 512) -> np.ndarray:
@@ -44,9 +46,9 @@ def compare_two_energy_envelope(audio_signal1: np.ndarray, audio_signal2: np.nda
     energy_envelope1 = calculate_energy_envelope(audio_signal1, hop_length=hop_length)
     energy_envelope2 = calculate_energy_envelope(audio_signal2, hop_length=hop_length)
 
-    min_len = min(energy_envelope1.shape[1], energy_envelope2.shape[1])
-    energy1_adjusted = energy_envelope1[:, :min_len]
-    energy2_adjusted = energy_envelope2[:, :min_len]
+    energy1_adjusted, energy2_adjusted = adjust_dimensions(
+        energy_envelope1, energy_envelope2
+    )
 
     distance = np.linalg.norm(energy1_adjusted - energy2_adjusted)
     max_distance = (np.linalg.norm(energy1_adjusted) +

@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import spectral_flatness
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_spectral_flatness(audio_signal: np.ndarray,
                                 /, *, n_fft: int = 8192) -> np.ndarray:
@@ -42,9 +44,7 @@ def compare_two_spectral_flatness(audio_signal1: np.ndarray, audio_signal2: np.n
     flatness_1 = calculate_spectral_flatness(audio_signal1, n_fft=n_fft)
     flatness_2 = calculate_spectral_flatness(audio_signal2, n_fft=n_fft)
 
-    min_len = min(flatness_1.shape[1], flatness_2.shape[1])
-    flatness_1_adjusted = flatness_1[:, :min_len]
-    flatness_2_adjusted = flatness_2[:, :min_len]
+    flatness_1_adjusted, flatness_2_adjusted = adjust_dimensions(flatness_1, flatness_2)
 
     distance = np.linalg.norm(np.abs(flatness_1_adjusted) -
                               np.abs(flatness_2_adjusted))

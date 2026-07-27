@@ -18,6 +18,10 @@ keywords = ["audio", "analysis", "comparison", "real-time", "data collection"]
 # Dependencies are read from requirements.txt using dynamic metadata
 dynamic = ["dependencies"]
 
+[project.optional-dependencies]
+# Required only for the `artc test` CLI subcommand, not for library use
+test = ["pytest==8.3.4"]
+
 [project.urls]
 Homepage = "https://github.com/nicolascereijo/artc"
 

@@ -1,6 +1,8 @@
 import numpy as np
 from librosa.feature import spectral_contrast
 
+from ..datastructures.harmonize import adjust_dimensions
+
 
 def calculate_spectral_contrast(audio_signal: np.ndarray, sample_rate: float,
                                 /, *, hop_length: int = 2048) -> np.ndarray:
@@ -47,9 +49,7 @@ def compare_two_spectral_contrast(audio_signal1: np.ndarray, audio_signal2: np.n
     contrast_1 = calculate_spectral_contrast(audio_signal1, sample_rate1, hop_length=hop_length)
     contrast_2 = calculate_spectral_contrast(audio_signal2, sample_rate2, hop_length=hop_length)
 
-    min_len = min(contrast_1.shape[1], contrast_2.shape[1])
-    contrast_1_adjusted = contrast_1[:, :min_len]
-    contrast_2_adjusted = contrast_2[:, :min_len]
+    contrast_1_adjusted, contrast_2_adjusted = adjust_dimensions(contrast_1, contrast_2)
 
     distance = np.linalg.norm(np.abs(contrast_1_adjusted) -
                               np.abs(contrast_2_adjusted))
