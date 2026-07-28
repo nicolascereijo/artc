@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.onset import onset_strength
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_temporal_flux(audio_signal: np.ndarray, sample_rate: float,
-                            /, *, hop_length: int = 8192) -> np.ndarray:
+                            /, *, hop_length: int | None = None) -> np.ndarray:
     """
         Computes the temporal flux of the audio signal by measuring onset strength and returns its
         frequency-domain representation.
@@ -16,17 +17,20 @@ def calculate_temporal_flux(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'temporal_flux' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the temporal flux sequence.
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "temporal_flux")))
     temporal_flux = onset_strength(y=audio_signal, sr=sample_rate, hop_length=hop_length)
     return np.fft.fft(temporal_flux)
 
 
 def compare_two_temporal_flux(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                               sample_rate1: float, sample_rate2: float,
-                              /, *, hop_length: int = 8192) -> float:
+                              /, *, hop_length: int | None = None) -> float:
     """
         Compares temporal flux sequences of two audio signals by computing their FFTs and returning
         a normalized similarity score.
@@ -61,7 +65,7 @@ def compare_two_temporal_flux(audio_signal1: np.ndarray, audio_signal2: np.ndarr
 
 
 def compare_multiple_temporal_flux(audio_signals: list, sample_rates: list,
-                                   /, *, hop_length: int = 8192) -> float:
+                                   /, *, hop_length: int | None = None) -> float:
     """
         Computes average temporal flux similarity for all unique signal pairs using
         `compare_two_temporal_flux`, reflecting overall dynamic onset coherence.

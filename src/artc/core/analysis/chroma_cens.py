@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import chroma_cens
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_chroma_cens(audio_signal: np.ndarray, sample_rate: float,
-                          /, *, hop_length: int = 512) -> np.ndarray:
+                          /, *, hop_length: int | None = None) -> np.ndarray:
     """
         Extracts the Chroma CENS feature sequence from the audio signal using the CENS chroma
         algorithm and returns its frequency-domain representation.
@@ -16,17 +17,20 @@ def calculate_chroma_cens(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'chroma_cens' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the Chroma CENS matrix (12 chroma bins × frames).
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "chroma_cens")))
     chr_cens = chroma_cens(y=audio_signal, sr=sample_rate, hop_length=hop_length)
     return np.fft.fft(chr_cens)
 
 
 def compare_two_chroma_cens(signal1: np.ndarray, signal2: np.ndarray,
                             sample_rate1: float, sample_rate2: float,
-                            /, *, hop_length: int = 512) -> float:
+                            /, *, hop_length: int | None = None) -> float:
     """
         Compares Chroma CENS alignment between two audio signals by computing their Chroma CENS FFTs
         and calculating a normalized similarity score.
@@ -63,7 +67,7 @@ def compare_two_chroma_cens(signal1: np.ndarray, signal2: np.ndarray,
 
 
 def compare_multiple_chroma_cens(audio_signals: list, sample_rates: list,
-                                 /, *, hop_length: int = 512) -> float:
+                                 /, *, hop_length: int | None = None) -> float:
     """
         Computes average Chroma CENS alignment similarity for all unique signal pairs using
         `compare_two_chroma_cens`, reflecting overall harmonic coherence.

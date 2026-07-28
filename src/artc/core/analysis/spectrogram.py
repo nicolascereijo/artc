@@ -1,11 +1,12 @@
 import numpy as np
 from librosa import stft
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_spectrogram(audio_signal: np.ndarray,
-                          /, *, n_fft: int = 4096) -> np.ndarray:
+                          /, *, n_fft: int | None = None) -> np.ndarray:
     """
         Computes magnitude spectrogram of the audio signal using short-time Fourier transform and
         returns its frequency-domain representation.
@@ -15,16 +16,19 @@ def calculate_spectrogram(audio_signal: np.ndarray,
 
         Keyword Arguments:
             n_fft (int): Length of the FFT window for spectral analysis.
+                Defaults to the 'spectrogram' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the magnitude spectrogram matrix.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "spectrogram")))
     spectrogram = np.abs(stft(audio_signal, n_fft=n_fft))
     return np.fft.fft(spectrogram)
 
 
 def compare_two_spectrogram(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
-                            /, *, n_fft: int = 4096) -> float:
+                            /, *, n_fft: int | None = None) -> float:
     """
         Compares spectrograms between two audio signals by computing their FFTs and returning a
         normalized similarity score.
@@ -59,7 +63,7 @@ def compare_two_spectrogram(audio_signal1: np.ndarray, audio_signal2: np.ndarray
 
 
 def compare_multiple_spectrogram(audio_signals: list,
-                                 /, *, n_fft: int = 4096) -> float:
+                                 /, *, n_fft: int | None = None) -> float:
     """
         Computes average spectrogram similarity for all unique signal pairs using
         `compare_two_spectrogram`, reflecting overall spectral content coherence.

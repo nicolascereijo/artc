@@ -1,9 +1,11 @@
 import numpy as np
 from librosa.beat import beat_track
 
+import artc.core.configurations as config
+
 
 def calculate_tempo(audio_signal: np.ndarray, sample_rate: float,
-                    /, *, hop_length: int = 1024) -> float:
+                    /, *, hop_length: int | None = None) -> float:
     """
         Estimates the global tempo (in BPM) of the audio signal using beat tracking.
 
@@ -13,20 +15,26 @@ def calculate_tempo(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'tempo' entry of [metric.window_parameter] in the TOML.
 
         Returns:
-            float: Estimated tempo in beats per minute (BPM).
+            float: Estimated tempo in beats per minute (BPM), or NaN if no pulse
+            was detected (as opposed to a genuine 0 BPM reading).
     """
-    tempo, _ = beat_track(y=audio_signal, sr=sample_rate, hop_length=hop_length)
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "tempo")))
+    tempo, beats = beat_track(y=audio_signal, sr=sample_rate, hop_length=hop_length)
 
     if isinstance(tempo, np.ndarray):
         tempo = np.mean(tempo)
+    if len(beats) == 0:
+        return float("nan")
     return float(tempo)
 
 
 def compare_two_tempo(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                       sample_rate1: float, sample_rate2: float,
-                      /, *, hop_length: int = 1024) -> float:
+                      /, *, hop_length: int | None = None) -> float:
     """
         Compares estimated tempo between two audio signals by computing their BPMs and returning a
         normalized similarity score.
@@ -49,6 +57,11 @@ def compare_two_tempo(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
     tempo1 = calculate_tempo(audio_signal1, sample_rate1, hop_length=hop_length)
     tempo2 = calculate_tempo(audio_signal2, sample_rate2, hop_length=hop_length)
 
+    # Only equal if neither signal has a detectable pulse. One NaN and one
+    # real tempo would otherwise compare as if both were genuinely 0 BPM.
+    if np.isnan(tempo1) or np.isnan(tempo2):
+        return 1.0 if np.isnan(tempo1) and np.isnan(tempo2) else 0.0
+
     distance = abs(tempo1 - tempo2)
     max_distance = max(tempo1, tempo2)
 
@@ -57,7 +70,7 @@ def compare_two_tempo(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
 
 
 def compare_multiple_tempo(audio_signals: list, sample_rates: list,
-                           /, *, hop_length: int = 1024) -> float:
+                           /, *, hop_length: int | None = None) -> float:
     """
         Computes average tempo similarity for all unique signal pairs using `compare_two_tempo`,
         reflecting overall tempo coherence.

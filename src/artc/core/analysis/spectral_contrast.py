@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import spectral_contrast
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_spectral_contrast(audio_signal: np.ndarray, sample_rate: float,
-                                /, *, hop_length: int = 2048) -> np.ndarray:
+                                /, *, hop_length: int | None = None) -> np.ndarray:
     """
         Computes spectral contrast of the audio signal using multiple frequency bands and returns
         its frequency-domain representation.
@@ -16,17 +17,20 @@ def calculate_spectral_contrast(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'spectral_contrast' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the spectral contrast matrix.
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "spectral_contrast")))
     contrast = spectral_contrast(y=audio_signal, sr=sample_rate, hop_length=hop_length)
     return np.fft.fft(contrast)
 
 
 def compare_two_spectral_contrast(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                                   sample_rate1: float, sample_rate2: float,
-                                  /, *, hop_length: int = 2048) -> float:
+                                  /, *, hop_length: int | None = None) -> float:
     """
         Compares spectral contrast between two audio signals by computing their FFTs and returning a
         normalized similarity score.
@@ -61,7 +65,7 @@ def compare_two_spectral_contrast(audio_signal1: np.ndarray, audio_signal2: np.n
 
 
 def compare_multiple_spectral_contrast(audio_signals: list, sample_rates: list,
-                                       /, *, hop_length: int = 2048) -> float:
+                                       /, *, hop_length: int | None = None) -> float:
     """
         Computes average spectral contrast similarity for all unique signal pairs using
         `compare_two_spectral_contrast`, reflecting overall tonal texture coherence.

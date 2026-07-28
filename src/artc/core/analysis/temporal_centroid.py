@@ -18,7 +18,9 @@ def calculate_temporal_centroid(audio_signal: np.ndarray, sample_rate: float, /)
     envelope = np.abs(onset_strength(y=audio_signal, sr=sample_rate))
     times = times_like(envelope, sr=sample_rate)
 
-    temporal_centroid = np.sum(envelope * times) / np.sum(envelope)
+    # Avoid 0/0 on silence. A NaN here would later be masked as a perfect match.
+    envelope_sum = np.sum(envelope)
+    temporal_centroid = np.sum(envelope * times) / envelope_sum if envelope_sum > 0 else 0.0
     return np.array([temporal_centroid])
 
 

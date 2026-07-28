@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import spectral_rolloff
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_spectral_roll_off(audio_signal: np.ndarray, sample_rate: float,
-                                /, *, n_fft: int = 512, roll_percent: float = 0.5) -> np.ndarray:
+                                /, *, n_fft: int | None = None, roll_percent: float = 0.5) -> np.ndarray:
     """
         Computes spectral roll-off frequency for each frame and returns its frequency-domain
         representation.
@@ -16,11 +17,14 @@ def calculate_spectral_roll_off(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             n_fft (int): Length of the FFT window for spectral analysis.
+                Defaults to the 'spectral_roll_off' entry of [metric.window_parameter] in the TOML.
             roll_percent (float): Fraction of spectral energy below the roll-off frequency.
 
         Returns:
             np.ndarray: FFT of the spectral roll-off sequence.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "spectral_roll_off")))
     roll_off = spectral_rolloff(y=audio_signal, sr=sample_rate,
                                 n_fft=n_fft, roll_percent=roll_percent)
     return np.fft.fft(roll_off)
@@ -28,7 +32,7 @@ def calculate_spectral_roll_off(audio_signal: np.ndarray, sample_rate: float,
 
 def compare_two_spectral_roll_off(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                                   sample_rate1: float, sample_rate2: float,
-                                  /, *, n_fft: int = 512, roll_percent: float = 0.5) -> float:
+                                  /, *, n_fft: int | None = None, roll_percent: float = 0.5) -> float:
     """
         Compares spectral roll-off between two audio signals by computing their roll-off FFTs and
         returning a normalized similarity score.
@@ -66,7 +70,7 @@ def compare_two_spectral_roll_off(audio_signal1: np.ndarray, audio_signal2: np.n
 
 
 def compare_multiple_spectral_roll_off(audio_signals: list, sample_rates: list,
-                                       /, *, n_fft: int = 512, roll_percent: float = 0.5) -> float:
+                                       /, *, n_fft: int | None = None, roll_percent: float = 0.5) -> float:
     """
         Computes average spectral roll-off similarity for all unique signal pairs using
         `compare_two_spectral_roll_off`, reflecting overall spectral shape coherence.

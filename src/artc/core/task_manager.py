@@ -96,6 +96,11 @@ def _mean_of_mode_range(values: NDArrayFloat) -> FloatScalar:
     """
     flat = np_ravel(values).astype(FloatScalar)
 
+    # A NaN never falls inside any bin below, so it would otherwise be
+    # silently excluded instead of flagging the pair as affected.
+    if np.isnan(flat).any():
+        return FloatScalar(np.nan)
+
     # Compute histogram across 10 equal-width bins covering [0, 100)
     hist, _ = np.histogram(flat, bins=np.arange(0, 101, 10))
 
@@ -372,13 +377,13 @@ def _comparator(comparison: Callable[[], FloatScalar]) -> FloatScalar:
         comparison: Callable returning a FloatScalar similarity value
 
     Returns:
-        The scaled comparison value, or -1.0 if memory constraints are hit
+        The scaled comparison value, or NaN if memory constraints are hit
     """
     try:
         return FloatScalar(comparison()) * 100.0
     except MemoryError:
         logger.warning("An operation was aborted due to insufficient memory")
-        return FloatScalar(-1.0)
+        return FloatScalar(np.nan)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -415,6 +420,13 @@ def compare(
                 f"Invalid statistics: {unknown}. Available: {available_stats}"
             )
     selected_stats = stats or available_stats
+
+    unknown_stats = [s for s in selected_stats if s not in STAT_CALCULATION]
+    if unknown_stats:
+        raise ValueError(
+            f"Unknown statistic(s) in config: {unknown_stats}. "
+            f"Available: {list(STAT_CALCULATION.keys())}"
+        )
 
     _set_memory_limit()
 

@@ -1,6 +1,7 @@
 import numpy as np
 from librosa.sequence import dtw
 
+import artc.core.configurations as config
 from .mfcc import calculate_mfcc
 
 
@@ -11,7 +12,7 @@ def compare_two_dtw(
     sample_rate2: float,
     /,
     *,
-    n_fft: int = 1024,
+    n_fft: int | None = None,
 ) -> float:
     """
     Computes DTW-based similarity between two audio signals by aligning their MFCC feature
@@ -25,6 +26,7 @@ def compare_two_dtw(
 
     Keyword Arguments:
         n_fft (int): FFT window length used for MFCC extraction.
+            Defaults to the 'dynamic_time_warping' entry of [metric.window_parameter] in the TOML.
 
     Returns:
         float: Similarity score between 0 and 1, where 1 indicates perfect match.
@@ -32,6 +34,8 @@ def compare_two_dtw(
     See Also:
         calculate_mfcc
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "dynamic_time_warping")))
     mfcc1 = calculate_mfcc(audio_signal1, sample_rate1, n_fft=n_fft)
     mfcc2 = calculate_mfcc(audio_signal2, sample_rate2, n_fft=n_fft)
 
@@ -44,7 +48,7 @@ def compare_two_dtw(
 
 
 def compare_multiple_dtw(
-    audio_signals: list, sample_rates: list, /, *, n_fft: int = 1024
+    audio_signals: list, sample_rates: list, /, *, n_fft: int | None = None
 ) -> float:
     """
     Computes average DTW-based similarity for all unique signal pairs using `compare_two_dtw`,

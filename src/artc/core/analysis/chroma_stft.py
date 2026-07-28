@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import chroma_stft
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_chroma_stft(audio_signal: np.ndarray, sample_rate: float,
-                          /, *, n_fft: int = 2048) -> np.ndarray:
+                          /, *, n_fft: int | None = None) -> np.ndarray:
     """
         Extracts the Chroma STFT feature matrix from the audio signal using the short-time Fourier
         transform and returns its frequency-domain representation.
@@ -16,17 +17,20 @@ def calculate_chroma_stft(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             n_fft (int): Length of the FFT window for STFT analysis.
+                Defaults to the 'chroma_stft' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the Chroma STFT matrix.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "chroma_stft")))
     chr_stft = chroma_stft(y=audio_signal, sr=sample_rate, n_fft=n_fft)
     return np.fft.fft(chr_stft)
 
 
 def compare_two_chroma_stft(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                             sample_rate1: float, sample_rate2: float,
-                            /, *, n_fft: int = 2048) -> float:
+                            /, *, n_fft: int | None = None) -> float:
     """
         Compares Chroma STFT alignment between two audio signals by computing their Chroma STFT FFTs
         and calculating a normalized similarity score.
@@ -61,7 +65,7 @@ def compare_two_chroma_stft(audio_signal1: np.ndarray, audio_signal2: np.ndarray
 
 
 def compare_multiple_chroma_stft(audio_signals: list, sample_rates: list,
-                                 /, *, n_fft: int = 2048) -> float:
+                                 /, *, n_fft: int | None = None) -> float:
     """
         Computes average Chroma STFT alignment similarity for all unique signal pairs using
         `compare_two_chroma_stft`, reflecting overall harmonic coherence.

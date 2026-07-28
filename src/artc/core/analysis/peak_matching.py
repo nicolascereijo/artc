@@ -1,11 +1,12 @@
 import numpy as np
 import librosa
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_peak_matching(audio_signal: np.ndarray, sample_rate: float,
-                            /, *, n_fft: int = 4096) -> tuple[np.ndarray, np.ndarray]:
+                            /, *, n_fft: int | None = None) -> tuple[np.ndarray, np.ndarray]:
     """
         Identifies prominent spectral peaks by computing the STFT magnitude, averaging across time,
         and picking peaks in the decibel domain.
@@ -16,10 +17,13 @@ def calculate_peak_matching(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             n_fft (int): Length of the FFT window for spectral analysis.
+                Defaults to the 'peak_matching' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             tuple[np.ndarray, np.ndarray]: Array of peak frequencies and corresponding magnitudes.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "peak_matching")))
     spectrogram = np.abs(librosa.stft(audio_signal, n_fft=n_fft))
     one_dimensional_spectrogram = np.mean(spectrogram, axis=1)
 
@@ -45,7 +49,7 @@ def calculate_peak_matching(audio_signal: np.ndarray, sample_rate: float,
 
 def compare_two_peak_matching(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                               sample_rate1: float, sample_rate2: float,
-                              /, *, n_fft: int = 4096) -> float:
+                              /, *, n_fft: int | None = None) -> float:
     """
         Compares spectral peak patterns between two audio signals by extracting their peak sets and
         computing an average frequency-magnitude similarity score.
@@ -68,6 +72,11 @@ def compare_two_peak_matching(audio_signal1: np.ndarray, audio_signal2: np.ndarr
     peak_freq1, peak_mag1 = calculate_peak_matching(audio_signal1, sample_rate1, n_fft=n_fft)
     peak_freq2, peak_mag2 = calculate_peak_matching(audio_signal2, sample_rate2, n_fft=n_fft)
 
+    # Only equal if neither signal has peaks. One-sided truncation below
+    # would otherwise hide a real difference as a trivial match.
+    if len(peak_freq1) == 0 or len(peak_freq2) == 0:
+        return 1.0 if len(peak_freq1) == len(peak_freq2) else 0.0
+
     peak_freq1_adjusted, peak_freq2_adjusted = adjust_dimensions(peak_freq1, peak_freq2)
     peak_mag1_adjusted, peak_mag2_adjusted = adjust_dimensions(peak_mag1, peak_mag2)
 
@@ -86,7 +95,7 @@ def compare_two_peak_matching(audio_signal1: np.ndarray, audio_signal2: np.ndarr
 
 
 def compare_multiple_peak_matching(audio_signals: list, sample_rates: list,
-                                   /, *, n_fft: int = 4096) -> float:
+                                   /, *, n_fft: int | None = None) -> float:
     """
         Computes average spectral peak similarity across all unique signal pairs using
         `compare_two_peak_matching`, reflecting overall spectral feature coherence.

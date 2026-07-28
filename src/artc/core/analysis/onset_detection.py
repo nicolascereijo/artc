@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.onset import onset_strength
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_onset_detection(audio_signal: np.ndarray, sample_rate: float,
-                              /, *, hop_length: int = 8192) -> np.ndarray:
+                              /, *, hop_length: int | None = None) -> np.ndarray:
     """
         Computes the onset strength envelope of the audio signal, indicating the likelihood of
         onsets (e.g., note attacks) over time.
@@ -16,16 +17,19 @@ def calculate_onset_detection(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'onset_detection' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: Onset strength envelope as a 1D array of length frames.
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "onset_detection")))
     return onset_strength(y=audio_signal, sr=sample_rate, hop_length=hop_length)
 
 
 def compare_two_onset_detection(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                                 sample_rate1: float, sample_rate2: float,
-                                /, *, hop_length: int = 8192) -> float:
+                                /, *, hop_length: int | None = None) -> float:
     """
         Compares onset strength envelopes between two audio signals and returns a normalized
         similarity score.
@@ -59,7 +63,7 @@ def compare_two_onset_detection(audio_signal1: np.ndarray, audio_signal2: np.nda
 
 
 def compare_multiple_onset_detection(audio_signals: list, sample_rates: list,
-                                     /, *, hop_length: int = 8192) -> float:
+                                     /, *, hop_length: int | None = None) -> float:
     """
         Computes average onset strength similarity for all unique signal pairs using
         `compare_two_onset_detection`, reflecting overall onset pattern coherence.

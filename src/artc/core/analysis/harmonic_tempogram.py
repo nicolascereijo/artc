@@ -2,11 +2,12 @@ import numpy as np
 from librosa.feature import tempogram
 from librosa.onset import onset_strength
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_harmonic_tempogram(audio_signal: np.ndarray, sample_rate: float,
-                                 /, *, hop_length: int = 512) -> np.ndarray:
+                                 /, *, hop_length: int | None = None) -> np.ndarray:
     """
         Computes the harmonic tempogram of the audio signal by analyzing onset strength and returns
         its frequency-domain representation.
@@ -17,10 +18,13 @@ def calculate_harmonic_tempogram(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'harmonic_tempogram' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the harmonic tempogram matrix.
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "harmonic_tempogram")))
     harmonic_tempogram = tempogram(y=audio_signal, sr=sample_rate, hop_length=hop_length,
                                    onset_envelope=onset_strength(y=audio_signal, sr=sample_rate))
     return np.fft.fft(harmonic_tempogram)
@@ -28,7 +32,7 @@ def calculate_harmonic_tempogram(audio_signal: np.ndarray, sample_rate: float,
 
 def compare_two_harmonic_tempogram(signal1: np.ndarray, signal2: np.ndarray,
                                    sample_rate1: float, sample_rate2: float,
-                                   /, *, hop_length: int = 512) -> float:
+                                   /, *, hop_length: int | None = None) -> float:
     """
         Compares harmonic tempograms between two audio signals by computing their FFTs and returning
         a normalized similarity score.
@@ -65,7 +69,7 @@ def compare_two_harmonic_tempogram(signal1: np.ndarray, signal2: np.ndarray,
 
 
 def compare_multiple_harmonic_tempogram(audio_signals: list, sample_rates: list,
-                                        /, *, hop_length: int = 512) -> float:
+                                        /, *, hop_length: int | None = None) -> float:
     """
         Computes average harmonic tempogram similarity for all unique signal pairs using
         `compare_two_harmonic_tempogram`, reflecting overall rhythmic coherence.

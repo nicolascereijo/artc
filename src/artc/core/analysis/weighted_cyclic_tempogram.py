@@ -2,11 +2,12 @@ import numpy as np
 from librosa.onset import onset_strength
 from librosa.feature import tempogram
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_wct(audio_signal: np.ndarray, sample_rate: float,
-                  /, *, hop_length: int = 512) -> np.ndarray:
+                  /, *, hop_length: int | None = None) -> np.ndarray:
     """
         Computes the weighted cyclic tempogram (WCT) of the audio signal by combining onset strength
         with tempogram autocorrelation and returns its frequency-domain representation.
@@ -17,10 +18,14 @@ def calculate_wct(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'weighted_cyclic_tempogram' entry of
+                [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the cyclic tempogram matrix.
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "weighted_cyclic_tempogram")))
     onset_envelope = onset_strength(y=audio_signal, sr=sample_rate, hop_length=hop_length)
     cyclic_tempogram = tempogram(y=audio_signal, sr=sample_rate,
                                  hop_length=hop_length, onset_envelope=onset_envelope)
@@ -29,7 +34,7 @@ def calculate_wct(audio_signal: np.ndarray, sample_rate: float,
 
 def compare_two_wct(signal1: np.ndarray, signal2: np.ndarray,
                     sample_rate1: float, sample_rate2: float,
-                    /, *, hop_length: int = 512) -> float:
+                    /, *, hop_length: int | None = None) -> float:
     """
         Compares weighted cyclic tempograms of two audio signals by computing their FFTs and
         returning a normalized similarity score.
@@ -66,7 +71,7 @@ def compare_two_wct(signal1: np.ndarray, signal2: np.ndarray,
 
 
 def compare_multiple_wct(audio_signals: list, sample_rates: list,
-                         /, *, hop_length: int = 512) -> float:
+                         /, *, hop_length: int | None = None) -> float:
     """
         Computes average weighted cyclic tempogram similarity for all unique signal pairs using
         `compare_two_wct`, reflecting overall cyclic rhythmic coherence.

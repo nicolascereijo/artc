@@ -1,5 +1,9 @@
 import numpy as np
 
+from .. import errors
+
+logger = errors.logger_config.LoggerSingleton().get_logger()
+
 
 def build_training_table(
     weak_classifiers: list[np.ndarray],
@@ -33,9 +37,11 @@ def build_training_table(
             Binary (0/1) group membership label for each of the N audios.
 
     Returns:
-        A tuple (X, y), X has shape (n_pairs, n_classifiers), y has shape
-        (n_pairs,). y[k] is 1 only if both audios in pair k belong to the
-        labeled group.
+        A tuple (X, y), X has shape (n_pairs_valid, n_classifiers), y has
+        shape (n_pairs_valid,). y[k] is 1 only if both audios in pair k
+        belong to the labeled group. Pairs where any weak classifier holds
+        NaN (a comparison failed, see task_manager._comparator) are dropped,
+        so n_pairs_valid can be less than n * (n - 1) // 2.
     """
     if not weak_classifiers:
         raise ValueError("The list of weak classifiers is empty")
@@ -74,5 +80,13 @@ def build_training_table(
             # 1 if both audios are in the classified group, 0 otherwise.
             labels[row_idx] = group_labels[i] * group_labels[j]
             row_idx += 1
+
+    valid = ~np.isnan(features).any(axis=1)
+    if not np.all(valid):
+        logger.warning(
+            f"Dropped {int((~valid).sum())} pair(s) with NaN features. "
+            "Likely caused by a MemoryError during comparison."
+        )
+        features, labels = features[valid], labels[valid]
 
     return features, labels

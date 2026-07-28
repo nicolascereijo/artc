@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import zero_crossing_rate
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_zcr(
-    audio_signal: np.ndarray, /, *, frame_length: int = 2048, hop_length: int = 512
+    audio_signal: np.ndarray, /, *, frame_length: int = 2048, hop_length: int | None = None
 ) -> np.ndarray:
     """
     Computes the zero-crossing rate (ZCR) of the audio signal over time frames.
@@ -16,10 +17,13 @@ def calculate_zcr(
     Keyword Arguments:
         frame_length (int): Length of each analysis frame (in samples).
         hop_length (int): Number of samples between successive frames.
+            Defaults to the 'zero_crossing_rate' entry of [metric.window_parameter] in the TOML.
 
     Returns:
         np.ndarray: ZCR sequence as a 2D array with shape (1, frames).
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "zero_crossing_rate")))
     return zero_crossing_rate(
         y=audio_signal, frame_length=frame_length, hop_length=hop_length
     )
@@ -31,7 +35,7 @@ def compare_two_zcr(
     /,
     *,
     frame_length: int = 2048,
-    hop_length: int = 512,
+    hop_length: int | None = None,
 ) -> float:
     """
     Compares zero-crossing rate sequences of two audio signals and returns a normalized
@@ -81,7 +85,7 @@ def compare_two_zcr(
 
 
 def compare_multiple_zcr(
-    audio_signals: list, /, *, frame_length: int = 2048, hop_length: int = 512
+    audio_signals: list, /, *, frame_length: int = 2048, hop_length: int | None = None
 ) -> float:
     """
     Computes average ZCR similarity for all unique signal pairs using `compare_two_zcr`,

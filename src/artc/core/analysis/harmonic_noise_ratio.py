@@ -2,9 +2,11 @@ import numpy as np
 from librosa import stft
 from librosa.effects import hpss
 
+import artc.core.configurations as config
+
 
 def calculate_harmonic_noise_ratio(audio_signal: np.ndarray,
-                                   /, *, n_fft: int = 512, hop_length: int = 512) -> float:
+                                   /, *, n_fft: int | None = None, hop_length: int | None = None) -> float:
     """
         Computes the ratio of harmonic to noise components in the audio signal by separating
         harmonic and percussive parts and measuring their power.
@@ -15,11 +17,17 @@ def calculate_harmonic_noise_ratio(audio_signal: np.ndarray,
         Keyword Arguments:
             n_fft (int): FFT window length for STFT analysis.
             hop_length (int): Number of samples between successive analysis frames.
+                Both default to the 'harmonic_noise_ratio' entry of
+                [metric.window_parameter] in the TOML.
 
         Returns:
             float: Harmonic-to-noise ratio (HNR), where higher values indicate
             greater harmonic dominance.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "harmonic_noise_ratio")))
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "harmonic_noise_ratio")))
     harmonic, percussive = hpss(y=audio_signal)
 
     harmonic_power = np.sum(np.abs(stft(harmonic, n_fft=n_fft, hop_length=hop_length))**2)
@@ -30,7 +38,7 @@ def calculate_harmonic_noise_ratio(audio_signal: np.ndarray,
 
 
 def compare_two_hnr(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
-                    /, *, n_fft: int = 512, hop_length: int = 512) -> float:
+                    /, *, n_fft: int | None = None, hop_length: int | None = None) -> float:
     """
         Compares harmonic-to-noise ratios between two audio signals and returns a normalized
         similarity score.
@@ -60,7 +68,7 @@ def compare_two_hnr(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
 
 
 def compare_multiple_hnr(audio_signals: list,
-                         /, *, n_fft: int = 512, hop_length: int = 512) -> float:
+                         /, *, n_fft: int | None = None, hop_length: int | None = None) -> float:
     """
         Computes average HNR similarity for all unique signal pairs using `compare_two_hnr`,
         reflecting overall harmonic versus noise coherence.

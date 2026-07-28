@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.core import piptrack
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_pitch(audio_signal: np.ndarray, sample_rate: float,
-                    /, *, n_fft: int = 8192) -> np.ndarray:
+                    /, *, n_fft: int | None = None) -> np.ndarray:
     """
         Extracts the predominant pitch contour from the audio signal using the pitch-in-chroma
         (piptrack) algorithm and returns its frequency-domain representation.
@@ -16,17 +17,20 @@ def calculate_pitch(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             n_fft (int): FFT window length for pitch tracking analysis.
+                Defaults to the 'pitch' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the pitch sequence (Hz) extracted per frame.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "pitch")))
     pitches, magnitudes = piptrack(y=audio_signal, sr=sample_rate, n_fft=n_fft)
     return np.fft.fft(pitches[magnitudes.argmax(axis=0), np.arange(magnitudes.shape[1])])
 
 
 def compare_two_pitch(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                       sample_rate1: float, sample_rate2: float,
-                      /, *, n_fft: int = 8192) -> float:
+                      /, *, n_fft: int | None = None) -> float:
     """
         Compares pitch contours between two audio signals by computing their pitch FFTs and
         returning a normalized similarity score.
@@ -60,7 +64,7 @@ def compare_two_pitch(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
 
 
 def compare_multiple_pitch(audio_signals: list, sample_rates: list,
-                           /, *, n_fft: int = 8192) -> float:
+                           /, *, n_fft: int | None = None) -> float:
     """
         Computes average pitch similarity for all unique signal pairs using `compare_two_pitch`,
         reflecting overall melodic coherence.

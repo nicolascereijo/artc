@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import mfcc
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_mfcc(audio_signal: np.ndarray, sample_rate: float,
-                   /, *, n_fft: int = 8192) -> np.ndarray:
+                   /, *, n_fft: int | None = None) -> np.ndarray:
     """
         Calculates Mel-frequency cepstral coefficients (MFCCs) from the audio signal.
 
@@ -15,16 +16,19 @@ def calculate_mfcc(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             n_fft (int): Length of the FFT window for STFT used in MFCC extraction.
+                Defaults to the 'mfcc' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: Array of shape (n_mfcc, frames) containing MFCC features.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "mfcc")))
     return mfcc(y=audio_signal, sr=sample_rate, n_mfcc=13, n_fft=n_fft)
 
 
 def compare_two_mfcc(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                      sample_rate1: float, sample_rate2: float,
-                     /, *, n_fft: int = 8192) -> float:
+                     /, *, n_fft: int | None = None) -> float:
     """
         Compares MFCC sequences between two audio signals by computing their FFTs and returning a
         normalized similarity score.
@@ -58,7 +62,7 @@ def compare_two_mfcc(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
 
 
 def compare_multiple_mfcc(audio_signals: list, sample_rates: list,
-                          /, *, n_fft: int = 8192) -> float:
+                          /, *, n_fft: int | None = None) -> float:
     """
         Computes average MFCC-based similarity for all unique signal pairs using `compare_two_mfcc`,
         reflecting overall timbral coherence.

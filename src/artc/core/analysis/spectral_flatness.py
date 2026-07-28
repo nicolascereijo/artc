@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import spectral_flatness
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_spectral_flatness(audio_signal: np.ndarray,
-                                /, *, n_fft: int = 8192) -> np.ndarray:
+                                /, *, n_fft: int | None = None) -> np.ndarray:
     """
         Computes spectral flatness of the audio signal using an FFT-based measure and returns its
         frequency-domain representation.
@@ -15,15 +16,18 @@ def calculate_spectral_flatness(audio_signal: np.ndarray,
 
         Keyword Arguments:
             n_fft (int): Length of the FFT window for spectral analysis.
+                Defaults to the 'spectral_flatness' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the spectral flatness sequence.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "spectral_flatness")))
     return np.fft.fft(spectral_flatness(y=audio_signal, n_fft=n_fft))
 
 
 def compare_two_spectral_flatness(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
-                                  /, *, n_fft: int = 8192) -> float:
+                                  /, *, n_fft: int | None = None) -> float:
     """
         Compares spectral flatness between two audio signals by computing their flatness FFTs and
         returning a normalized similarity score.
@@ -56,7 +60,7 @@ def compare_two_spectral_flatness(audio_signal1: np.ndarray, audio_signal2: np.n
 
 
 def compare_multiple_spectral_flatness(audio_signals: list,
-                                       /, *, n_fft: int = 8192) -> float:
+                                       /, *, n_fft: int | None = None) -> float:
     """
         Computes average spectral flatness similarity for all unique signal pairs using
         `compare_two_spectral_flatness`, reflecting overall noisiness coherence.

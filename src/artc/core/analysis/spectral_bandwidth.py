@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import spectral_bandwidth
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_spectral_bandwidth(audio_signal: np.ndarray, sample_rate: float,
-                                 /, *, n_fft: int = 4096) -> np.ndarray:
+                                 /, *, n_fft: int | None = None) -> np.ndarray:
     """
         Computes spectral bandwidth of the audio signal and returns its frequency-domain
         representation.
@@ -16,16 +17,19 @@ def calculate_spectral_bandwidth(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             n_fft (int): Length of the FFT window for spectral analysis.
+                Defaults to the 'spectral_bandwidth' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the spectral bandwidth sequence.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "spectral_bandwidth")))
     return np.fft.fft(spectral_bandwidth(y=audio_signal, sr=sample_rate, n_fft=n_fft))
 
 
 def compare_two_spectral_bandwidth(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                                    sample_rate1: float, sample_rate2: float,
-                                   /, *, n_fft: int = 4096) -> float:
+                                   /, *, n_fft: int | None = None) -> float:
     """
         Compares spectral bandwidth between two audio signals by computing their bandwidth FFTs and
         returning a normalized similarity score.
@@ -60,7 +64,7 @@ def compare_two_spectral_bandwidth(audio_signal1: np.ndarray, audio_signal2: np.
 
 
 def compare_multiple_spectral_bandwidth(audio_signals: list, sample_rates: list,
-                                        /, *, n_fft: int = 4096) -> float:
+                                        /, *, n_fft: int | None = None) -> float:
     """
         Computes average spectral bandwidth similarity for all unique signal pairs using
         `compare_two_spectral_bandwidth`, reflecting overall spectral dispersion coherence.

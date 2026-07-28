@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import rms
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_energy_envelope(audio_signal: np.ndarray,
-                              /, *, hop_length: int = 512) -> np.ndarray:
+                              /, *, hop_length: int | None = None) -> np.ndarray:
     """
         Computes the energy envelope of the audio signal using RMS and returns its frequency-domain
         representation.
@@ -15,16 +16,19 @@ def calculate_energy_envelope(audio_signal: np.ndarray,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'energy_envelope' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the energy envelope sequence.
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "energy_envelope")))
     energy_envelope = rms(y=audio_signal, hop_length=hop_length)
     return np.fft.fft(energy_envelope)
 
 
 def compare_two_energy_envelope(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
-                                /, *, hop_length: int = 512) -> float:
+                                /, *, hop_length: int | None = None) -> float:
     """
         Compares energy envelopes between two audio signals by computing their energy envelope FFTs
         and returning a normalized similarity score.
@@ -59,7 +63,7 @@ def compare_two_energy_envelope(audio_signal1: np.ndarray, audio_signal2: np.nda
 
 
 def compare_multiple_energy_envelope(audio_signals: list,
-                                     /, *, hop_length: int = 512) -> float:
+                                     /, *, hop_length: int | None = None) -> float:
     """
         Computes average energy envelope similarity for all unique signal pairs using
         `compare_two_energy_envelope`, reflecting overall dynamic coherence.

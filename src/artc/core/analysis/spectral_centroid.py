@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import spectral_centroid
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_spectral_centroid(audio_signal: np.ndarray, sample_rate: float,
-                                /, *, n_fft: int = 4096) -> np.ndarray:
+                                /, *, n_fft: int | None = None) -> np.ndarray:
     """
         Computes spectral centroid of the audio signal and returns its frequency-domain
         representation.
@@ -16,17 +17,20 @@ def calculate_spectral_centroid(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             n_fft (int): Length of the FFT window for spectral analysis.
+                Defaults to the 'spectral_centroid' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the spectral centroid sequence.
     """
+    if n_fft is None:
+        n_fft = int(config.read_config(("window_parameter", "spectral_centroid")))
     centroid = spectral_centroid(y=audio_signal, sr=sample_rate, n_fft=n_fft)
     return np.fft.fft(centroid)
 
 
 def compare_two_spectral_centroid(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                                   sample_rate1: float, sample_rate2: float,
-                                  /, *, n_fft: int = 4096) -> float:
+                                  /, *, n_fft: int | None = None) -> float:
     """
         Compares spectral centroid sequences between two audio signals by computing their FFTs and
         returning a normalized similarity score.
@@ -61,7 +65,7 @@ def compare_two_spectral_centroid(audio_signal1: np.ndarray, audio_signal2: np.n
 
 
 def compare_multiple_spectral_centroid(audio_signals: list, sample_rates: list,
-                                       /, *, n_fft: int = 4096) -> float:
+                                       /, *, n_fft: int | None = None) -> float:
     """
         Computes average spectral centroid similarity for all unique signal pairs using
         `compare_two_spectral_centroid`, reflecting overall spectral balance coherence.

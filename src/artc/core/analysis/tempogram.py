@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.feature import tempogram
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_tempogram(audio_signal: np.ndarray, sample_rate: float,
-                        /, *, hop_length: int = 512) -> np.ndarray:
+                        /, *, hop_length: int | None = None) -> np.ndarray:
     """
         Computes the tempogram matrix of the audio signal based on onset strength autocorrelation
         and returns its frequency-domain representation.
@@ -16,17 +17,20 @@ def calculate_tempogram(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'tempogram' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the tempogram matrix.
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "tempogram")))
     temp = tempogram(y=audio_signal, sr=sample_rate, hop_length=hop_length)
     return np.fft.fft(temp)
 
 
 def compare_two_tempogram(signal1: np.ndarray, signal2: np.ndarray,
                           sample_rate1: float, sample_rate2: float,
-                          /, *, hop_length: int = 512) -> float:
+                          /, *, hop_length: int | None = None) -> float:
     """
         Compares tempogram representations of two audio signals by computing their FFTs and
         returning a normalized similarity score.
@@ -61,7 +65,7 @@ def compare_two_tempogram(signal1: np.ndarray, signal2: np.ndarray,
 
 
 def compare_multiple_tempogram(audio_signals: list, sample_rates: list,
-                               /, *, hop_length: int = 512) -> float:
+                               /, *, hop_length: int | None = None) -> float:
     """
         Computes average tempogram similarity for all unique signal pairs using
         `compare_two_tempogram`, reflecting overall rhythmic periodicity coherence.

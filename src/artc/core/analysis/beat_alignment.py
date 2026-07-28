@@ -1,11 +1,12 @@
 import numpy as np
 from librosa.beat import beat_track
 
+import artc.core.configurations as config
 from ..datastructures.harmonize import adjust_dimensions
 
 
 def calculate_beat_alignment(audio_signal: np.ndarray, sample_rate: float,
-                             /, *, hop_length: int = 1024) -> np.ndarray:
+                             /, *, hop_length: int | None = None) -> np.ndarray:
     """
         Detects beat positions in the audio signal using a beat tracking algorithm and returns the
         frequency-domain representation of the beat activation sequence.
@@ -16,17 +17,23 @@ def calculate_beat_alignment(audio_signal: np.ndarray, sample_rate: float,
 
         Keyword Arguments:
             hop_length (int): Number of samples between successive analysis frames.
+                Defaults to the 'beat_alignment' entry of [metric.window_parameter] in the TOML.
 
         Returns:
             np.ndarray: FFT of the detected beat position sequence.
     """
+    if hop_length is None:
+        hop_length = int(config.read_config(("window_parameter", "beat_alignment")))
     _, beats = beat_track(y=audio_signal, sr=sample_rate, hop_length=hop_length)
+    # np.fft.fft raises on empty input. No detectable pulse means zero beats.
+    if len(beats) == 0:
+        return np.array([])
     return np.fft.fft(beats)
 
 
 def compare_two_beat_alignment(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
                                sample_rate1: float, sample_rate2: float,
-                               /, *, hop_length: int = 1024) -> float:
+                               /, *, hop_length: int | None = None) -> float:
     """
         Compares beat alignment between two audio signals by computing their beat FFTs and
         calculating a normalized similarity score.
@@ -49,6 +56,11 @@ def compare_two_beat_alignment(audio_signal1: np.ndarray, audio_signal2: np.ndar
     beats_1 = calculate_beat_alignment(audio_signal1, sample_rate1, hop_length=hop_length)
     beats_2 = calculate_beat_alignment(audio_signal2, sample_rate2, hop_length=hop_length)
 
+    # Only equal if neither signal has beats. One-sided truncation below
+    # would otherwise hide a real difference as a trivial match.
+    if len(beats_1) == 0 or len(beats_2) == 0:
+        return 1.0 if len(beats_1) == len(beats_2) else 0.0
+
     beats_1_adjusted, beats_2_adjusted = adjust_dimensions(beats_1, beats_2)
 
     distance = np.linalg.norm(np.abs(beats_1_adjusted) -
@@ -61,7 +73,7 @@ def compare_two_beat_alignment(audio_signal1: np.ndarray, audio_signal2: np.ndar
 
 
 def compare_multiple_beat_alignment(audio_signals: list, sample_rates: list,
-                                    /, *, hop_length: int = 1024) -> float:
+                                    /, *, hop_length: int | None = None) -> float:
     """
         Computes average beat-alignment similarity for all unique signal pairs using
         `compare_two_beat_alignment`, reflecting overall rhythmic coherence.
