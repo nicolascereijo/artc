@@ -2,11 +2,12 @@ import numpy as np
 
 
 def build_training_table(
-    weak_classifiers: list[np.ndarray], group_labels: list[int]
+    weak_classifiers: list[np.ndarray],
+    group_labels: list[int]
 ) -> tuple[np.ndarray, np.ndarray]:
     """Flatten a list of per-metric similarity matrices into one feature table.
 
-    Each `weak_classifier` is an NxN matrix holding, for one metric and
+    Each 'weak_classifier' is an NxN matrix holding, for one metric and
     statistic, the similarity between every pair of audios. This function
     stacks those matrices side by side into a single table. One row per
     unordered audio pair {i, j} (i < j), one column per weak classifier, plus
@@ -17,13 +18,12 @@ def build_training_table(
     symmetric (comparing audio i against audio j yields the same value as
     comparing j against i) so (i, j) and (j, i) always carry identical
     feature values and the same label. Emitting both as separate rows would
-    not add information, it would silently duplicate observations. Since a
-    later step splits this table into train/test sets by row, keeping both
-    copies risks placing one copy in training and its exact twin in testing,
-    letting the model be evaluated on a row it has effectively already
-    seen (inflating reported accuracy without the model actually
-    generalizing better). Restricting to i < j removes the duplication at the
-    source, before any splitting happens.
+    not add information, it would silently duplicate observations. Also, if
+    this table were ever split by row for train/test, it would risk placing
+    one copy in training and its exact twin in testing. Restricting to i < j
+    removes the duplication at the source. 'generate_forest' relies on this
+    by calling 'build_training_table' separately on the train and test audio
+    subsets, so no pair ever crosses that boundary.
 
     Args:
         weak_classifiers:
@@ -33,7 +33,7 @@ def build_training_table(
             Binary (0/1) group membership label for each of the N audios.
 
     Returns:
-        A tuple (X, y): X has shape (n_pairs, n_classifiers), y has shape
+        A tuple (X, y), X has shape (n_pairs, n_classifiers), y has shape
         (n_pairs,). y[k] is 1 only if both audios in pair k belong to the
         labeled group.
     """
