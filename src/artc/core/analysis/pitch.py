@@ -2,7 +2,7 @@ import numpy as np
 from librosa.core import piptrack
 
 import artc.core.configurations as config
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_pitch(audio_signal: np.ndarray, sample_rate: float,
@@ -50,6 +50,8 @@ def compare_two_pitch(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
         See Also:
             calculate_pitch
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     pitch1 = calculate_pitch(audio_signal1, sample_rate1, n_fft=n_fft)
     pitch2 = calculate_pitch(audio_signal2, sample_rate2, n_fft=n_fft)
 

@@ -58,7 +58,7 @@ def load_commands(commands_path: str, *, logger: Logger) -> list[str]:
             The JSON file was not found, a default list of commands is
             being used instead.
             """)
-        return ["welcome", "test"]
+        return ["welcome", "test", "about"]
 
 
 def parse_args(commands_path: str, *, logger: Logger) -> argparse.Namespace:
@@ -168,3 +168,10 @@ def handle_command(command: str, *, command_args: list[str], logger: Logger) -> 
                 folder. Check the directory and access permissions."""
             )
             sys.exit(1)
+
+    elif command == "about":
+        about()
+
+    else:
+        logger.error(f"Unknown command '{command}'")
+        sys.exit(1)

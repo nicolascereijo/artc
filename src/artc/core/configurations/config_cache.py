@@ -42,7 +42,13 @@ def _validate_schema(data: dict[str, Any]) -> None:
                 break
             node = node[key]
         else:
-            if not isinstance(node, expected_type):
+            # This uses an exact type match rather than isinstance, because
+            # bool is a subclass of int in Python and isinstance(True, int)
+            # is True. Without that, `max_processes = true` would silently
+            # pass validation and later be read as 1. tomllib only ever
+            # produces the plain builtin types listed in `required` above,
+            # never subclasses of them.
+            if type(node) is not expected_type:
                 problems.append(
                     f"'{'.'.join(path)}' must be {expected_type.__name__}, "
                     f"got {type(node).__name__}"

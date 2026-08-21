@@ -3,7 +3,7 @@ from librosa.feature import tempogram
 from librosa.onset import onset_strength
 
 import artc.core.configurations as config
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_harmonic_tempogram(audio_signal: np.ndarray, sample_rate: float,
@@ -25,8 +25,10 @@ def calculate_harmonic_tempogram(audio_signal: np.ndarray, sample_rate: float,
     """
     if hop_length is None:
         hop_length = int(config.read_config(("window_parameter", "harmonic_tempogram")))
-    harmonic_tempogram = tempogram(y=audio_signal, sr=sample_rate, hop_length=hop_length,
-                                   onset_envelope=onset_strength(y=audio_signal, sr=sample_rate))
+    harmonic_tempogram = tempogram(
+        y=audio_signal, sr=sample_rate, hop_length=hop_length,
+        onset_envelope=onset_strength(y=audio_signal, sr=sample_rate, hop_length=hop_length)
+    )
     return np.fft.fft(harmonic_tempogram)
 
 
@@ -52,6 +54,8 @@ def compare_two_harmonic_tempogram(signal1: np.ndarray, signal2: np.ndarray,
         See Also:
             calculate_harmonic_tempogram
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     harmonic_tempogram1 = calculate_harmonic_tempogram(signal1, sample_rate1, hop_length=hop_length)
     harmonic_tempogram2 = calculate_harmonic_tempogram(signal2, sample_rate2, hop_length=hop_length)
 

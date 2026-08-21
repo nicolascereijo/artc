@@ -1,7 +1,7 @@
 import numpy as np
 import librosa
 
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_loudness(audio_signal: np.ndarray, sample_rate: float) -> np.ndarray:
@@ -44,6 +44,8 @@ def compare_two_loudness(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
         See Also:
             calculate_loudness
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     loudness1 = calculate_loudness(audio_signal1, sample_rate1)
     loudness2 = calculate_loudness(audio_signal2, sample_rate2)
 

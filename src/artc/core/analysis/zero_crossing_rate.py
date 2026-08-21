@@ -22,6 +22,8 @@ def calculate_zcr(
     Returns:
         np.ndarray: ZCR sequence as a 2D array with shape (1, frames).
     """
+    if audio_signal.size == 0:
+        return np.zeros((1, 0), dtype=np.float64)
     if hop_length is None:
         hop_length = int(config.read_config(("window_parameter", "zero_crossing_rate")))
     return zero_crossing_rate(
@@ -57,6 +59,13 @@ def compare_two_zcr(
     """
     zcr1 = calculate_zcr(signal1, frame_length=frame_length, hop_length=hop_length)
     zcr2 = calculate_zcr(signal2, frame_length=frame_length, hop_length=hop_length)
+
+    # A zero length input signal produces a zero length ZCR sequence, which
+    # np.percentile and max can't handle. If both signals are empty they are
+    # trivially identical. If only one is empty they are trivially as
+    # different as possible, and nothing needs to be truncated.
+    if zcr1.size == 0 or zcr2.size == 0:
+        return 1.0 if zcr1.size == 0 and zcr2.size == 0 else 0.0
 
     # Clip each sequence to its own 95th percentile before normalizing. A
     # single isolated spike in ZCR (e.g. a brief burst of noise) would

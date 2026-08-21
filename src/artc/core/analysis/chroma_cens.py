@@ -2,7 +2,7 @@ import numpy as np
 from librosa.feature import chroma_cens
 
 import artc.core.configurations as config
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_chroma_cens(audio_signal: np.ndarray, sample_rate: float,
@@ -50,6 +50,8 @@ def compare_two_chroma_cens(signal1: np.ndarray, signal2: np.ndarray,
         See Also:
             calculate_chroma_cens
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     chroma_cens1 = calculate_chroma_cens(signal1, sample_rate1, hop_length=hop_length)
     chroma_cens2 = calculate_chroma_cens(signal2, sample_rate2, hop_length=hop_length)
 

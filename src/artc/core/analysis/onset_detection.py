@@ -2,7 +2,7 @@ import numpy as np
 from librosa.onset import onset_strength
 
 import artc.core.configurations as config
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_onset_detection(audio_signal: np.ndarray, sample_rate: float,
@@ -49,6 +49,8 @@ def compare_two_onset_detection(audio_signal1: np.ndarray, audio_signal2: np.nda
         See Also:
             calculate_onset_detection
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     onset_env1 = calculate_onset_detection(audio_signal1, sample_rate1, hop_length=hop_length)
     onset_env2 = calculate_onset_detection(audio_signal2, sample_rate2, hop_length=hop_length)
 

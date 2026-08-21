@@ -3,7 +3,7 @@ from librosa.onset import onset_strength
 from librosa.feature import tempogram
 
 import artc.core.configurations as config
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_wct(audio_signal: np.ndarray, sample_rate: float,
@@ -54,6 +54,8 @@ def compare_two_wct(signal1: np.ndarray, signal2: np.ndarray,
         See Also:
             calculate_wct
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     cyclic_tempogram1 = calculate_wct(signal1, sample_rate1, hop_length=hop_length)
     cyclic_tempogram2 = calculate_wct(signal2, sample_rate2, hop_length=hop_length)
 

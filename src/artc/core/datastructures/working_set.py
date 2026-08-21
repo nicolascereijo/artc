@@ -28,11 +28,9 @@ class AudioFile:
             # (Check function,
             # {Function parameters},
             # Error message)
-            (
-                errors.check_audio_corruption,
-                {"file_path": self.path / self.name},
-                f"Audio file '{self.path}' is corrupted",
-            ),
+            # check_audio_format already re-checks corruption internally, so
+            # there is no separate check_audio_corruption entry here. Adding
+            # one would just read the file a second time for the same result.
             (
                 errors.check_audio_format,
                 {
@@ -139,6 +137,10 @@ class WorkingSet:
         configuration_path: Path,
         group: str = "individual_files",
     ) -> bool:
+        if group == "":
+            logger.error("Can not add groups with empty names")
+            return False
+
         if not errors.validate_path(path=path, name=name):
             logger.error(f"Path '{path / name}' does not exist or is not accessible")
             return False
@@ -148,8 +150,9 @@ class WorkingSet:
             # the file (e.g. corrupted content, unsupported codec).
             # OSError: raised directly by some audioread backends (ffdec, macca)
             # for a missing/unreadable file, bypassing DecodeError entirely.
+            # EOFError: raised by audioread for a zero byte or truncated file.
             audio_signal, sample_rate = librosa.load(path / name)
-        except (DecodeError, OSError) as e:
+        except (DecodeError, OSError, EOFError) as e:
             logger.error(f"Could not load audio file '{name}': {e}")
             return False
 
@@ -165,9 +168,6 @@ class WorkingSet:
                 f"Could not add file '{name}' in group '{group}' in working set "
                 f"'{self.name}'"
             )
-            return False
-        if group == "":
-            logger.error("Can not add groups with empty names")
             return False
 
         if group in self.working_set:

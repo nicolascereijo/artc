@@ -2,7 +2,7 @@ import numpy as np
 from librosa.beat import beat_track
 
 import artc.core.configurations as config
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_beat_alignment(audio_signal: np.ndarray, sample_rate: float,
@@ -53,6 +53,8 @@ def compare_two_beat_alignment(audio_signal1: np.ndarray, audio_signal2: np.ndar
         See Also:
             calculate_beat_alignment
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     beats_1 = calculate_beat_alignment(audio_signal1, sample_rate1, hop_length=hop_length)
     beats_2 = calculate_beat_alignment(audio_signal2, sample_rate2, hop_length=hop_length)
 

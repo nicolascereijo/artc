@@ -1,5 +1,5 @@
 from .working_set import AudioFile, WorkingSet
-from .harmonize import adjust_length, adjust_dimensions
+from .harmonize import adjust_dimensions, check_matching_sample_rates
 
 
-__all__ = ['AudioFile', 'WorkingSet', 'adjust_length', 'adjust_dimensions']
+__all__ = ['AudioFile', 'WorkingSet', 'adjust_dimensions', 'check_matching_sample_rates']

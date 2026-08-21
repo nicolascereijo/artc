@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 
@@ -6,8 +7,11 @@ def check_path_accessible(path: Path) -> bool:
         return False
 
     try:
-        _ = list(path.iterdir())
-        return path.exists()
+        # is_dir() and os.access() are stat based checks. Unlike
+        # materializing list(path.iterdir()), they don't scale with the
+        # directory's contents, which matters since this runs once per
+        # file added.
+        return path.is_dir() and os.access(path, os.R_OK | os.X_OK)
     except (PermissionError, FileNotFoundError, NotADirectoryError):
         return False
 

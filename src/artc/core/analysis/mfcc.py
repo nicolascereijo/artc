@@ -2,7 +2,7 @@ import numpy as np
 from librosa.feature import mfcc
 
 import artc.core.configurations as config
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_mfcc(audio_signal: np.ndarray, sample_rate: float,
@@ -48,6 +48,8 @@ def compare_two_mfcc(audio_signal1: np.ndarray, audio_signal2: np.ndarray,
         See Also:
             calculate_mfcc
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     mfcc1 = np.fft.fft(calculate_mfcc(audio_signal1, sample_rate1, n_fft=n_fft))
     mfcc2 = np.fft.fft(calculate_mfcc(audio_signal2, sample_rate2, n_fft=n_fft))
 

@@ -50,55 +50,6 @@ def setup():
 
 
 # --------------------------------------------------------------------------------------------------
-# Tests for core.datastructures.harmonize
-# --------------------------------------------------------------------------------------------------
-def test_adjust_length():
-    array1 = np.array([0])
-    array2 = np.array([1, 2e3])
-    array3 = np.array([-1, 2.09, 1e-100])
-
-    assert np.array_equal(
-        dt_structs.adjust_length(array1, array1),
-        (np.array([0], dtype=np.float32), np.array([0], dtype=np.float32)),
-    )
-    assert np.array_equal(
-        dt_structs.adjust_length(array2, array2),
-        (np.array([1, 2e3], dtype=np.float32), np.array([1, 2e3], dtype=np.float32)),
-    )
-    assert np.array_equal(
-        dt_structs.adjust_length(array3, array3),
-        (
-            np.array([-1, 2.09, 1e-100], dtype=np.float32),
-            np.array([-1, 2.09, 1e-100], dtype=np.float32),
-        ),
-    )
-    assert np.array_equal(
-        dt_structs.adjust_length(array1, array2),
-        (np.array([0], dtype=np.float32), np.array([1], dtype=np.float32)),
-    )
-    assert np.array_equal(
-        dt_structs.adjust_length(array1, array3),
-        (np.array([0], dtype=np.float32), np.array([-1], dtype=np.float32)),
-    )
-    assert np.array_equal(
-        dt_structs.adjust_length(array2, array3),
-        (np.array([1, 2e3], dtype=np.float32), np.array([-1, 2.09], dtype=np.float32)),
-    )
-    assert np.array_equal(
-        dt_structs.adjust_length(array2, array1),
-        (np.array([1], dtype=np.float32), np.array([0], dtype=np.float32)),
-    )
-    assert np.array_equal(
-        dt_structs.adjust_length(array3, array1),
-        (np.array([-1], dtype=np.float32), np.array([0], dtype=np.float32)),
-    )
-    assert np.array_equal(
-        dt_structs.adjust_length(array3, array2),
-        (np.array([-1, 2.09], dtype=np.float32), np.array([1, 2e3], dtype=np.float32)),
-    )
-
-
-# --------------------------------------------------------------------------------------------------
 # Tests for core.datastructures.working_set
 # --------------------------------------------------------------------------------------------------
 def test_search_file(setup):

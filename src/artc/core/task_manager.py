@@ -34,6 +34,7 @@ Author: Nicolás Cereijo Ranchal
 Part of the ARtC (Audio Real-time Comparator) framework
 """
 
+import contextlib
 import gc
 import multiprocessing
 import os
@@ -370,19 +371,24 @@ def _comparator_builder(
 def _comparator(comparison: Callable[[], FloatScalar]) -> FloatScalar:
     """Safely execute a comparison callable, scaling result to 0–100
 
-    Catches MemoryError and logs a warning if the operation cannot be completed
-    The result is scaled by 100 to express similarity as a percentage
+    Catches any exception raised by the comparison and logs a warning instead
+    of letting it propagate and abort every other pending comparison for the
+    current metric. The result is scaled by 100 to express similarity as a
+    percentage.
 
     Args:
         comparison: Callable returning a FloatScalar similarity value
 
     Returns:
-        The scaled comparison value, or NaN if memory constraints are hit
+        The scaled comparison value, or NaN if the comparison failed
     """
     try:
         return FloatScalar(comparison()) * 100.0
     except MemoryError:
         logger.warning("An operation was aborted due to insufficient memory")
+        return FloatScalar(np.nan)
+    except Exception as e:
+        logger.warning(f"An operation failed and was skipped: {e!r}")
         return FloatScalar(np.nan)
 
 
@@ -404,7 +410,6 @@ def compare(
     """
     available_stats: list[str] = config.read_config("stats")
     processes = _available_processes()
-    items = wset.working_set[set_to_use]
     results: list[tuple[str, NDArrayFloat]] = []
 
     if metric not in analysis.COMPARE_FUNCTIONS:
@@ -413,13 +418,20 @@ def compare(
             f"{list(analysis.COMPARE_FUNCTIONS.keys())}"
         )
 
-    if stats:
+    if set_to_use not in wset.working_set:
+        raise ValueError(
+            f"Unknown set '{set_to_use}' in working set '{wset.name}'. "
+            f"Available sets: {list(wset.working_set.keys())}"
+        )
+    items = wset.working_set[set_to_use]
+
+    if stats is not None:
         unknown = [s for s in stats if s not in available_stats]
         if unknown:
             raise ValueError(
                 f"Invalid statistics: {unknown}. Available: {available_stats}"
             )
-    selected_stats = stats or available_stats
+    selected_stats = stats if stats is not None else available_stats
 
     unknown_stats = [s for s in selected_stats if s not in STAT_CALCULATION]
     if unknown_stats:
@@ -455,29 +467,25 @@ def compare(
                 )
             )
 
-    # Sequential fallback (processes == 1)
-    if processes == 1:
-        pair_results = [[_comparator(c) for c in group] for group in all_operations]
+    # A single pool (when processes > 1) is reused for both the pairwise
+    # comparisons and every statistic's reduction, instead of spawning one
+    # per statistic. `mapper` picks plain sequential mapping when running
+    # with a single process, so the reduction logic below only exists once.
+    pool_context = (
+        multiprocessing.Pool(processes=processes) if processes > 1 else contextlib.nullcontext()
+    )
+    with pool_context as pool:
+        mapper = pool.map if pool is not None else lambda f, xs: [f(x) for x in xs]
 
-    # Parallel execution using multiprocessing.Pool
-    else:
-        with multiprocessing.Pool(processes=processes) as pool:
-            pair_results = [pool.map(_comparator, group) for group in all_operations]
+        pair_results = [mapper(_comparator, group) for group in all_operations]
+        pair_arrays = [np.array(r, dtype=FloatScalar, copy=False) for r in pair_results]
 
-    # Convert pairwise results to arrays and compute statistics
-    pair_arrays = [np.array(r, dtype=FloatScalar, copy=False) for r in pair_results]
-
-    for stat_name in selected_stats:
-        stat_func = STAT_CALCULATION[stat_name]
-        if processes == 1:
-            per_pair_stats = [stat_func(arr) for arr in pair_arrays]
-        else:
-            with multiprocessing.Pool(processes=processes) as pool:
-                per_pair_stats = pool.map(stat_func, pair_arrays)
-
-        results.append(
-            (stat_name, _build_symmetric_matrix([float(v) for v in per_pair_stats]))
-        )
+        for stat_name in selected_stats:
+            stat_func = STAT_CALCULATION[stat_name]
+            per_pair_stats = mapper(stat_func, pair_arrays)
+            results.append(
+                (stat_name, _build_symmetric_matrix([float(v) for v in per_pair_stats]))
+            )
 
     gc.collect()
     return results

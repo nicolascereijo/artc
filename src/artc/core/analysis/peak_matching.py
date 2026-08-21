@@ -2,7 +2,7 @@ import numpy as np
 import librosa
 
 import artc.core.configurations as config
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_peak_matching(audio_signal: np.ndarray, sample_rate: float,
@@ -69,6 +69,8 @@ def compare_two_peak_matching(audio_signal1: np.ndarray, audio_signal2: np.ndarr
         See Also:
             calculate_peak_matching
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     peak_freq1, peak_mag1 = calculate_peak_matching(audio_signal1, sample_rate1, n_fft=n_fft)
     peak_freq2, peak_mag2 = calculate_peak_matching(audio_signal2, sample_rate2, n_fft=n_fft)
 

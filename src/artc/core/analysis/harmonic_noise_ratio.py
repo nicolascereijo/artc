@@ -1,6 +1,5 @@
 import numpy as np
 from librosa import stft
-from librosa.effects import hpss
 
 import artc.core.configurations as config
 
@@ -24,6 +23,12 @@ def calculate_harmonic_noise_ratio(audio_signal: np.ndarray,
             float: Harmonic-to-noise ratio (HNR), where higher values indicate
             greater harmonic dominance.
     """
+    # This import is deferred because librosa.effects.hpss pulls in
+    # librosa.decompose, which in turn pulls in scikit-learn. That is a real
+    # cost, and it should only be paid when HNR is actually computed, not on
+    # every `import artc.core`.
+    from librosa.effects import hpss
+
     if n_fft is None:
         n_fft = int(config.read_config(("window_parameter", "harmonic_noise_ratio")))
     if hop_length is None:

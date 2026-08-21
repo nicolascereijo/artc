@@ -2,6 +2,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import rcParams
 from matplotlib.figure import Figure
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import ConfusionMatrixDisplay, RocCurveDisplay
@@ -19,6 +20,11 @@ def tree_plots(
     fig_width: int = 50,
     fig_height: int = 25
 ) -> Tuple[Figure, Figure, Figure, Figure]:
+    # Set explicitly here (rather than as an import-time side effect) so
+    # merely importing this module doesn't silently mutate a global
+    # matplotlib setting for callers who never asked for these plots.
+    rcParams['font.family'] = 'DejaVu Sans'
+
     return (
         confusion_matrix(model, X_test, y_test, cmap=confusion_matrix_cmap),
         roc_curve(model, X_test, y_test),
@@ -65,7 +71,7 @@ def decision_tree(model: RandomForestClassifier, feature_names: list[str], *,
     fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
     plot_tree(model.estimators_[0], filled=True, max_depth=max_depth,
-        feature_names=feature_names, class_names=["0", "1"])
+        feature_names=feature_names, class_names=["0", "1"], ax=ax)
     ax.set_title(f"Forest decision tree (depth limited to {max_depth})")
 
     return fig

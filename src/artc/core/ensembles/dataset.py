@@ -85,7 +85,9 @@ def build_training_table(
     if not np.all(valid):
         logger.warning(
             f"Dropped {int((~valid).sum())} pair(s) with NaN features. "
-            "Likely caused by a MemoryError during comparison."
+            "This is caused by a failed comparison somewhere in that pair, "
+            "whether from a memory limit or any other error (see "
+            "task_manager._comparator)."
         )
         features, labels = features[valid], labels[valid]
 

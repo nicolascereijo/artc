@@ -2,7 +2,7 @@ import numpy as np
 from librosa.feature import spectral_centroid
 
 import artc.core.configurations as config
-from ..datastructures.harmonize import adjust_dimensions
+from ..datastructures.harmonize import adjust_dimensions, check_matching_sample_rates
 
 
 def calculate_spectral_centroid(audio_signal: np.ndarray, sample_rate: float,
@@ -50,6 +50,8 @@ def compare_two_spectral_centroid(audio_signal1: np.ndarray, audio_signal2: np.n
         See Also:
             calculate_spectral_centroid
     """
+    check_matching_sample_rates(sample_rate1, sample_rate2)
+
     centroid_1 = calculate_spectral_centroid(audio_signal1, sample_rate1, n_fft=n_fft)
     centroid_2 = calculate_spectral_centroid(audio_signal2, sample_rate2, n_fft=n_fft)
 
