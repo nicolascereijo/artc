@@ -28,32 +28,35 @@ artc.core.task_manager
 │   └── _comparator
 │
 └── [ORCHESTRATION LAYER]
+    ├── _mapper
     └── compare  ← public entrypoint
 
 Author: Nicolás Cereijo Ranchal
-Part of the ARtC (Audio Real-time Comparator) framework
+Part of the ARtC (Audio Real-time Comparator) framework.
 """
 
 import contextlib
 import gc
 import multiprocessing
 import os
-from collections.abc import Sequence
+from collections.abc import Callable, Iterable, Sequence
 from functools import partial
-from typing import Callable
+from multiprocessing.pool import Pool
+from typing import TypeVar
 
 import numpy as np
 import psutil
 
-# Optional 'resource' module (POSIX only)
+# Optional 'resource' module (POSIX only).
 try:
     import resource  # type: ignore[attr-defined]
 except ImportError:  # Windows
     resource = None  # type: ignore[assignment]
 
 import artc.core.configurations as config
-from artc.core import analysis, errors
+from artc.core import analysis
 from artc.core.datastructures import WorkingSet
+from artc.core.errors import logger_config
 from artc.types import (
     FloatScalar,
     NDArrayFloat,
@@ -66,34 +69,35 @@ from artc.types import (
     np_var,
 )
 
-logger = errors.logger_config.LoggerSingleton().get_logger()
+logger = logger_config.LoggerSingleton().get_logger()
 
 
 @NDArrayFloatCheck("values", level="full_checks")
 def _mean(values: NDArrayFloat) -> FloatScalar:
-    """Compute the arithmetic mean of numeric values"""
+    """Compute the arithmetic mean of numeric values."""
     return np_mean(values)
 
 
 @NDArrayFloatCheck("values", level="full_checks")
 def _variance(values: NDArrayFloat) -> FloatScalar:
-    """Compute the variance of numeric values"""
+    """Compute the variance of numeric values."""
     return np_var(values)
 
 
 @NDArrayFloatCheck("values", level="full_checks")
 def _mean_of_mode_range(values: NDArrayFloat) -> FloatScalar:
-    """Compute the mean value within the most populated range of the input data
+    """Compute the mean value within the most populated range of the input data.
 
-    The sequence is divided into 10 equal-width buckets (ranges of size 10)
+    The sequence is divided into 10 equal-width buckets (ranges of size 0.1)
     The bucket containing the most elements is identified, and the mean
-    of values within that bucket is returned
+    of values within that bucket is returned.
 
     Args:
         values: Numeric values to analyze
 
     Returns:
-        The mean of the densest range, or 0.0 if no data falls within any range
+        The mean of the densest range, or 0.0 if no data falls within any
+        range.
     """
     flat = np_ravel(values).astype(FloatScalar)
 
@@ -102,13 +106,13 @@ def _mean_of_mode_range(values: NDArrayFloat) -> FloatScalar:
     if np.isnan(flat).any():
         return FloatScalar(np.nan)
 
-    # Compute histogram across 10 equal-width bins covering [0, 100)
-    hist, _ = np.histogram(flat, bins=np.arange(0, 101, 10))
+    # Compute histogram across 10 equal-width bins covering [0, 1).
+    hist, _ = np.histogram(flat, bins=np.arange(0, 1.01, 0.1))
 
-    # Divide the input into 10 fixed ranges (0–10, 10–20, ..., 90–100)
+    # Divide the input into 10 fixed ranges (0.0–0.1, 0.1–0.2, ..., 0.9–1.0)
     # and identify the range containing the highest density of values.
     best_range = int(np.argmax(hist))
-    lo, hi = best_range * 10, (best_range + 1) * 10
+    lo, hi = best_range * 0.1, (best_range + 1) * 0.1
     mask = (flat >= lo) & (flat < hi)
 
     return FloatScalar(np_mean(flat[mask]) if np.any(mask) else 0.0)
@@ -116,17 +120,17 @@ def _mean_of_mode_range(values: NDArrayFloat) -> FloatScalar:
 
 @NDArrayFloatCheck("values", level="full_checks")
 def _maximum(values: NDArrayFloat) -> FloatScalar:
-    """Return the maximum value of the sequence"""
+    """Return the maximum value of the sequence."""
     return np_max(values)
 
 
 @NDArrayFloatCheck("values", level="full_checks")
 def _minimum(values: NDArrayFloat) -> FloatScalar:
-    """Return the minimum value of the sequence"""
+    """Return the minimum value of the sequence."""
     return np_min(values)
 
 
-"""Scalar statistical reduction functions applied during analysis, by name"""
+"""Scalar statistical reduction functions applied during analysis, by name."""
 STAT_CALCULATION: dict[str, ScalarReduceFn] = {
     "mean": _mean,
     "variance": _variance,
@@ -140,63 +144,70 @@ STAT_CALCULATION: dict[str, ScalarReduceFn] = {
 # Process, memory safety controls and resource limits
 # ─────────────────────────────────────────────────────────────
 def _available_processes() -> int:
-    """Determine how many concurrent processes can be safely used
+    """Determine how many concurrent processes can be safely used.
 
     Read the user configuration and validate the number of processes
-    against the system's available CPU cores
+    against the system's available CPU cores.
     """
     processes = config.read_config("processes")
     cpu_cores = os.cpu_count() or 1
 
-    if not (isinstance(processes, int) and isinstance(cpu_cores, int)):
-        raise ValueError("Unable to query available processes or CPU cores")
+    if not isinstance(processes, int):
+        raise TypeError("Unable to query available processes or CPU cores")
 
     if processes < 1 or processes > cpu_cores:
         raise ValueError(
-            f"Selected processes ({processes}) must be between 1 and {cpu_cores}"
+            f"Selected processes ({processes}) must be between 1 and " +
+            f"{cpu_cores}"
         )
     return processes
 
 
 def _available_memory() -> int:
-    """Compute the safe memory allocation limit in bytes
+    """Compute the safe memory allocation limit in bytes.
 
     The limit is derived from the system’s total memory and the percentage
-    specified in the user configuration (max 80% allowed)
+    specified in the user configuration (max 80% allowed).
     """
     mem_limit = config.read_config("memory")
     total_memory = psutil.virtual_memory().total
 
     if not isinstance(mem_limit, int) or not (0 < mem_limit <= 80):
         raise ValueError(
-            "System memory settings cannot be queried, or the selected amount "
-            "exceeds the safety limit (<= 80%)"
+            "System memory settings cannot be queried, or the selected " +
+            "amount exceeds the safety limit (<= 80%)"
         )
     return int(total_memory * (mem_limit / 100.0))
 
 
 def _set_memory_limit() -> None:
-    """Apply an OS-level virtual memory limit based on configuration
+    """Apply an OS-level virtual memory limit based on configuration.
 
-    This uses `resource.setrlimit()` to restrict the address space (RLIMIT_AS)
-    available to the current process, preventing excessive memory consumption
+    This uses 'resource.setrlimit()' to restrict the address space
+    ('RLIMIT_AS') available to the current process, preventing excessive
+    memory consumption.
 
     Note:
-        Memory-limit enforcement does not work on Windows because Windows sucks.
+        Memory-limit enforcement does not work on Windows because Windows
+        sucks.
     """
-    # Skip on Windows or platforms without RLIMIT_AS
+    # Skip on Windows or platforms without 'RLIMIT_AS'.
     if resource is None or not hasattr(resource, "RLIMIT_AS"):
         logger.warning(
-            "Memory limit enforcement via 'resource' is not supported on this platform, skipping"
+            "Memory limit enforcement via 'resource' is not supported on " +
+            "this platform, skipping"
         )
         return
 
     memory = _available_memory()
     try:
-        resource.setrlimit(resource.RLIMIT_AS, (memory, resource.RLIM_INFINITY))
+        resource.setrlimit(
+            resource.RLIMIT_AS, (memory, resource.RLIM_INFINITY)
+        )
     except Exception as exc:
         raise RuntimeError(
-            "The memory configuration is not compatible with the operating system"
+            "The memory configuration is not compatible with the " +
+            "operating system"
         ) from exc
 
 
@@ -207,24 +218,26 @@ def _set_memory_limit() -> None:
 def _audio_into_chunks(
     audio: NDArrayFloat, samples_per_chunk: int
 ) -> list[NDArrayFloat]:
-    """Split an audio signal into equal-length chunks
+    """Split an audio signal into equal-length chunks.
 
     Handles both mono and multi-channel signals, producing non-overlapping
     contiguous segments of uniform size. Chunks smaller than the requested
-    size are discarded to ensure consistent array shapes
+    size are discarded to ensure consistent array shapes.
 
     Args:
         audio:
             Input audio array. For mono signals: shape (samples,)
             For multi-channel signals: shape (channels, samples)
         samples_per_chunk:
-            Number of samples per chunk
+            Number of samples per chunk.
 
     Returns:
-        A list of contiguous, equally sized audio chunks
+        A list of contiguous, equally sized audio chunks.
     """
     if samples_per_chunk <= 0:
-        raise ValueError("Number of samples per chunk must be a positive integer")
+        raise ValueError(
+            "Number of samples per chunk must be a positive integer"
+        )
 
     if audio.ndim == 1:  # Mono
         chunks = [
@@ -243,10 +256,10 @@ def _audio_into_chunks(
 
 
 def _build_symmetric_matrix(values: Sequence[float]) -> NDArrayFloat:
-    """Reconstruct a symmetric matrix from its upper-triangular elements
+    """Reconstruct a symmetric matrix from its upper-triangular elements.
 
-    Given a list of values representing the upper-triangular part of a symmetric
-    matrix (including the main diagonal):
+    Given a list of values representing the upper-triangular part of a
+    symmetric matrix (including the main diagonal):
 
         value1, value2, value3
              _, value4, value5
@@ -272,23 +285,24 @@ def _build_symmetric_matrix(values: Sequence[float]) -> NDArrayFloat:
     Args:
         values:
             Flattened sequence representing the upper-triangular values
-            (including the main diagonal)
+            (including the main diagonal).
 
     Returns:
-        The reconstructed symmetric matrix as a NumPy array
+        The reconstructed symmetric matrix as a NumPy array.
     """
-    # Compute matrix side length using the inverse triangular-number formula
-    n = int(round((-1 + (1 + 8 * len(values)) ** 0.5) / 2))
+    # Compute matrix side length using the inverse triangular-number formula.
+    n = round((-1 + (1 + 8 * len(values)) ** 0.5) / 2)
 
     if n * (n + 1) // 2 != len(values):
         raise ValueError(
-            f"Input length ({len(values)}) does not correspond to a valid symmetric matrix"
+            f"Input length ({len(values)}) does not correspond to a " +
+            "valid symmetric matrix"
         )
 
     matrix = np.zeros((n, n), dtype=FloatScalar)
     row_idx, col_idx = np.triu_indices(n)
 
-    # Fill upper-triangular values and mirror them to the lower half
+    # Fill upper-triangular values and mirror them to the lower half.
     matrix[row_idx, col_idx] = values
     matrix[col_idx, row_idx] = values
 
@@ -302,13 +316,13 @@ def _build_symmetric_matrix(values: Sequence[float]) -> NDArrayFloat:
 @NDArrayFloatCheck("audio_2", level="frontier_checks")
 def _comparator_builder(
     metric: str,
-    compare_func: Callable[..., FloatScalar],
+    compare_func: Callable[..., float],
     audio_1: NDArrayFloat,
     audio_2: NDArrayFloat,
     *,
     sr1: int | None = None,
     sr2: int | None = None,
-) -> list[list[Callable[[], FloatScalar]]]:
+) -> list[list[Callable[[], float]]]:
     """Construct deferred comparison callables between all chunk pairs.
 
     Each callable represents a comparison operation between two specific audio
@@ -316,14 +330,16 @@ def _comparator_builder(
     worker processes. The actual execution mode is decided by the caller.
 
     Note on chunk pairing:
-        When `audio_1` and `audio_2` are the same signal (e.g. when computing
-        the diagonal of the similarity matrix), the chunk-to-chunk comparison
-        matrix is symmetric, so only the upper-triangular region is built to
-        avoid computing and storing redundant duplicate pairs.
+        When 'audio_1' and 'audio_2' are the same signal (e.g. when
+        computing the diagonal of the similarity matrix), the
+        chunk-to-chunk comparison matrix is symmetric, so only the
+        upper-triangular region is built to avoid computing and storing
+        redundant duplicate pairs.
 
-        When `audio_1` and `audio_2` are different signals, no such symmetry
-        exists. Pair (i, j) and pair (j, i) involve different chunk content on
-        each side, so every combination of chunks must be compared.
+        When 'audio_1' and 'audio_2' are different signals, no such
+        symmetry exists. Pair '(i, j)' and pair '(j, i)' involve different
+        chunk content on each side, so every combination of chunks must be
+        compared.
     """
     samples_per_chunk = config.read_config("sampling")
 
@@ -335,18 +351,19 @@ def _comparator_builder(
     min_len = min(audio_1.shape[-1], audio_2.shape[-1])
     if samples_per_chunk > min_len:
         raise ValueError(
-            "Samples per fragment cannot be queried, or the selected number is too large"
+            "Samples per fragment cannot be queried, or the selected " +
+            "number is too large"
         )
 
-    # Normalize indexing depending on channel layout (mono vs multi-channel)
-    def _slice(x: np.ndarray) -> np.ndarray:
+    # Normalize indexing depending on channel layout (mono vs multi-channel).
+    def _slice(x: NDArrayFloat) -> NDArrayFloat:
         return x[:min_len] if x.ndim == 1 else x[:, :min_len]
 
     audio1_chunks = _audio_into_chunks(_slice(audio_1), samples_per_chunk)
     audio2_chunks = _audio_into_chunks(_slice(audio_2), samples_per_chunk)
 
     use_sr = analysis.COMPARE_FUNCTIONS[metric]["use_sample_rate"]
-    sr_args: tuple = (sr1, sr2) if use_sr else ()
+    sr_args: tuple[int | None, ...] = (sr1, sr2) if use_sr else ()
 
     # Same underlying signal compared with itself. The chunk-pair matrix is
     # symmetric, so only the upper triangle (including the diagonal) is needed.
@@ -368,26 +385,27 @@ def _comparator_builder(
     return [comparators_group]
 
 
-def _comparator(comparison: Callable[[], FloatScalar]) -> FloatScalar:
-    """Safely execute a comparison callable, scaling result to 0–100
+def _comparator(comparison: Callable[[], float]) -> FloatScalar:
+    """Safely execute a comparison callable.
 
     Catches any exception raised by the comparison and logs a warning instead
     of letting it propagate and abort every other pending comparison for the
-    current metric. The result is scaled by 100 to express similarity as a
-    percentage.
+    current metric.
 
     Args:
-        comparison: Callable returning a FloatScalar similarity value
+        comparison: Callable returning a similarity value as a plain float
 
     Returns:
-        The scaled comparison value, or NaN if the comparison failed
+        The comparison value, or NaN if the comparison failed.
     """
     try:
-        return FloatScalar(comparison()) * 100.0
+        return FloatScalar(comparison())
     except MemoryError:
         logger.warning("An operation was aborted due to insufficient memory")
         return FloatScalar(np.nan)
-    except Exception as e:
+    # Broad catch is intentional, it isolates a failing comparison so the
+    # rest of the pool keeps running.
+    except Exception as e:  # noqa: BLE001
         logger.warning(f"An operation failed and was skipped: {e!r}")
         return FloatScalar(np.nan)
 
@@ -395,6 +413,26 @@ def _comparator(comparison: Callable[[], FloatScalar]) -> FloatScalar:
 # ─────────────────────────────────────────────────────────────
 # Public entrypoint
 # ─────────────────────────────────────────────────────────────
+_MapperIn = TypeVar("_MapperIn")
+_MapperOut = TypeVar("_MapperOut")
+
+
+def _mapper(
+    pool: Pool | None,
+    func: Callable[[_MapperIn], _MapperOut],
+    values: Iterable[_MapperIn],
+) -> list[_MapperOut]:
+    """Apply 'func' over 'values', using 'pool' when one is available.
+
+    Falls back to plain sequential mapping when 'pool' is 'None', so the
+    reduction logic in 'compare()' only has to be written once regardless
+    of whether multiprocessing is enabled.
+    """
+    if pool is not None:
+        return pool.map(func, values)
+    return [func(x) for x in values]
+
+
 def compare(
     metric: str,
     wset: WorkingSet,
@@ -402,11 +440,11 @@ def compare(
     set_to_use: str = "individual_files",
     stats: list[str] | None = None,
 ) -> list[tuple[str, NDArrayFloat]]:
-    """Run pairwise audio comparisons and compute selected statistics
+    """Run pairwise audio comparisons and compute selected statistics.
 
     Executes all pairwise comparisons for a given metric, applies statistical
     aggregations (mean, variance, etc.), and returns one symmetric matrix per
-    statistic, representing the pairwise similarity across the working set
+    statistic, representing the pairwise similarity across the working set.
     """
     available_stats: list[str] = config.read_config("stats")
     processes = _available_processes()
@@ -414,13 +452,13 @@ def compare(
 
     if metric not in analysis.COMPARE_FUNCTIONS:
         raise ValueError(
-            f"Invalid metric '{metric}'. Available metrics: "
+            f"Invalid metric '{metric}'. Available metrics: " +
             f"{list(analysis.COMPARE_FUNCTIONS.keys())}"
         )
 
     if set_to_use not in wset.working_set:
         raise ValueError(
-            f"Unknown set '{set_to_use}' in working set '{wset.name}'. "
+            f"Unknown set '{set_to_use}' in working set '{wset.name}'. " +
             f"Available sets: {list(wset.working_set.keys())}"
         )
     items = wset.working_set[set_to_use]
@@ -436,13 +474,13 @@ def compare(
     unknown_stats = [s for s in selected_stats if s not in STAT_CALCULATION]
     if unknown_stats:
         raise ValueError(
-            f"Unknown statistic(s) in config: {unknown_stats}. "
+            f"Unknown statistic(s) in config: {unknown_stats}. " +
             f"Available: {list(STAT_CALCULATION.keys())}"
         )
 
     _set_memory_limit()
 
-    all_operations: list[Sequence[Callable[[], FloatScalar]]] = []
+    all_operations: list[Sequence[Callable[[], float]]] = []
     use_sr = analysis.COMPARE_FUNCTIONS[metric]["use_sample_rate"]
     for i, audio_signal_1 in enumerate(items):
         for audio_signal_2 in items[i:]:
@@ -469,23 +507,29 @@ def compare(
 
     # A single pool (when processes > 1) is reused for both the pairwise
     # comparisons and every statistic's reduction, instead of spawning one
-    # per statistic. `mapper` picks plain sequential mapping when running
-    # with a single process, so the reduction logic below only exists once.
+    # per statistic. '_mapper' falls back to plain sequential mapping when
+    # running with a single process, so the reduction logic below only
+    # exists once.
     pool_context = (
-        multiprocessing.Pool(processes=processes) if processes > 1 else contextlib.nullcontext()
+        multiprocessing.Pool(processes=processes)
+        if processes > 1
+        else contextlib.nullcontext()
     )
     with pool_context as pool:
-        mapper = pool.map if pool is not None else lambda f, xs: [f(x) for x in xs]
-
-        pair_results = [mapper(_comparator, group) for group in all_operations]
-        pair_arrays = [np.array(r, dtype=FloatScalar, copy=False) for r in pair_results]
+        pair_results = [
+            _mapper(pool, _comparator, group) for group in all_operations
+        ]
+        pair_arrays = [
+            np.array(r, dtype=FloatScalar, copy=False) for r in pair_results
+        ]
 
         for stat_name in selected_stats:
             stat_func = STAT_CALCULATION[stat_name]
-            per_pair_stats = mapper(stat_func, pair_arrays)
-            results.append(
-                (stat_name, _build_symmetric_matrix([float(v) for v in per_pair_stats]))
+            per_pair_stats = _mapper(pool, stat_func, pair_arrays)
+            matrix = _build_symmetric_matrix(
+                [float(v) for v in per_pair_stats]
             )
+            results.append((stat_name, matrix))
 
-    gc.collect()
+    _ = gc.collect()
     return results

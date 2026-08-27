@@ -8,7 +8,7 @@ from artc.core.ensembles import generate_forest
 
 # Audio directory used by TEMPORARY_demo_compare.py to build the comparison
 # matrices. Audio order there follows WorkingSet.add_directory's
-# sorted(os.listdir(...), key=str.lower)
+# sorted(os.listdir(...), key=str.lower).
 AUDIO_DIR = Path(__file__).parent / "test_collection" / "TEMPORARY_papper_selection"
 
 LABELS_BY_FILE: dict[str, int] = {
@@ -87,31 +87,40 @@ def get_csv_files(directory: Path):
 
 
 def load_csv_as_ndarray(csv_files, directory: Path):
-    """Load each CSV file into a NumPy ndarray."""
+    """Load each CSV file into a NumPy ndarray.
+
+    Returns the loaded matrices together with the filenames that actually
+    loaded, kept in sync so a failed file doesn't leave the name list longer
+    than the matrix list (which would silently mislabel every classifier
+    after the failed one in generate_forest's diagnostic plots).
+    """
     ndarray_list = []
+    loaded_files = []
     for file in csv_files:
         try:
             matrix = np.loadtxt(directory / file, delimiter=",", skiprows=0)
-            ndarray_list.append(matrix)
         except Exception as e:
             print(f"Error reading {file}: {e}")
-    return ndarray_list
+            continue
+        ndarray_list.append(matrix)
+        loaded_files.append(file)
+    return ndarray_list, loaded_files
 
 
 def main():
     start_time = time.time()
     current_path = Path(__file__)
 
-    # Must match the directory where the first script saves its CSV output
-    results_dir = current_path.parent / "TEMPORARY_demo_results"
-    # results_dir = current_path.parent / "TEMPORARY_papper_results"
+    # Must match the directory where the first script saves its CSV output.
+    # results_dir = current_path.parent / "TEMPORARY_demo_results"
+    results_dir = current_path.parent / "TEMPORARY_papper_results"
 
     csv_files = get_csv_files(results_dir)
-    ndarray_list = load_csv_as_ndarray(csv_files, results_dir)
+    ndarray_list, loaded_files = load_csv_as_ndarray(csv_files, results_dir)
 
     labels = build_labels(AUDIO_DIR)
 
-    generate_forest(ndarray_list, csv_files, labels)
+    generate_forest(ndarray_list, loaded_files, labels)
 
     print(f"Total execution time: {time.time() - start_time:.2f} seconds")
 

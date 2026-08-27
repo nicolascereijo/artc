@@ -1,25 +1,34 @@
 from pathlib import Path
+from typing import TypedDict
 
 import pytest
 from librosa import load
 
-import artc.core.analysis as analysis
+from artc.core import analysis
+
+
+class FileEntry(TypedDict):
+    path: Path
+    name: str
+
+
+SetupData = dict[str, list[FileEntry]]
 
 
 @pytest.fixture()
-def setup():
+def setup() -> SetupData:
     execution_path = Path(__file__)
 
     base_path = execution_path.parent
     fixtures_path = {
         "test_analysis": base_path.parent
-        / "fixtures",  # Path when running from 'test_analysis'
-        "tests": base_path / "fixtures",  # Path when running from 'tests'
+        / "fixtures",  # Path when running from 'test_analysis'.
+        "tests": base_path / "fixtures",  # Path when running from 'tests'.
     }.get(
         base_path.name, base_path / "tests" / "fixtures"
-    )  # Default, when running from 'core'
+    )  # Default, when running from 'core'.
 
-    data_set = {
+    data_set: SetupData = {
         "individual_files": [
             {"path": fixtures_path, "name": "little-waves.mp3"},
             {"path": fixtures_path, "name": "waves-in-caves.wav"},
@@ -30,7 +39,7 @@ def setup():
     return data_set
 
 
-def test_compare_two_beat_alignment(setup):
+def test_compare_two_beat_alignment(setup: SetupData) -> None:
     data_set = setup
     hop_length = 512
     audio_signal1, sample_rate1 = load(
@@ -159,7 +168,7 @@ def test_compare_two_beat_alignment(setup):
     )
 
 
-def test_compare_multiple_beat_alignment(setup):
+def test_compare_multiple_beat_alignment(setup: SetupData) -> None:
     data_set = setup
     hop_length = 512
     audio_signal1, sample_rate1 = load(

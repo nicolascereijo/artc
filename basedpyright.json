@@ -1,5 +1,0 @@
-{
-  "include": ["src"],
-  "extraPaths": ["src"],
-  "reportImplicitRelativeImport": false
-}

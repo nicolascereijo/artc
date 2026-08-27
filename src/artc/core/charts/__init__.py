@@ -1,4 +1,15 @@
-from .tree_plot import tree_plots, confusion_matrix, roc_curve, metric_importance, decision_tree
+from .tree_plot import (
+    confusion_matrix,
+    decision_tree,
+    metric_importance,
+    roc_curve,
+    tree_plots,
+)
 
-
-__all__ = ['tree_plots', 'confusion_matrix', 'roc_curve', 'metric_importance', 'decision_tree']
+__all__ = [
+    'confusion_matrix',
+    'decision_tree',
+    'metric_importance',
+    'roc_curve',
+    'tree_plots',
+]

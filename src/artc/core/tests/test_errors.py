@@ -1,11 +1,14 @@
-import pytest
 from pathlib import Path
 
-import artc.core.errors as errors
+import pytest
+
+from artc.core import errors
+
+SetupData = tuple[Path, str, Path]
 
 
 @pytest.fixture()
-def setup():
+def setup() -> SetupData:
     current_path = Path(__file__)
 
     if current_path.parent.name == "tests":
@@ -18,10 +21,8 @@ def setup():
     return config_path, "artc_config.toml", data_path
 
 
-# --------------------------------------------------------------------------------------------------
-# Tests for core.errors.validations.file
-# --------------------------------------------------------------------------------------------------
-def test_get_extension():
+# Tests for core.errors.validations.file.
+def test_get_extension() -> None:
     assert errors.get_extension(Path("path_example/file.mp3")) == ".mp3"
     assert errors.get_extension(Path("path_example/file.wav")) == ".wav"
 
@@ -29,15 +30,19 @@ def test_get_extension():
     assert len(errors.get_extension(Path("path_example/"))) == 0
 
 
-def test_check_audio_format(setup):
+def test_check_audio_format(setup: SetupData) -> None:
     path, name, data_path = setup
     configuration_file = path / name
 
     assert errors.check_audio_format(
-        path=data_path, name="little-waves.mp3", configuration_path=configuration_file
+        path=data_path,
+        name="little-waves.mp3",
+        configuration_path=configuration_file,
     )
     assert errors.check_audio_format(
-        path=data_path, name="waves-in-caves.wav", configuration_path=configuration_file
+        path=data_path,
+        name="waves-in-caves.wav",
+        configuration_path=configuration_file,
     )
 
     assert (
@@ -48,7 +53,9 @@ def test_check_audio_format(setup):
     )
     assert (
         errors.check_audio_format(
-            path=Path(""), name="invalid_file", configuration_path=configuration_file
+            path=Path(""),
+            name="invalid_file",
+            configuration_path=configuration_file,
         )
         is False
     )
@@ -62,16 +69,16 @@ def test_check_audio_format(setup):
     )
     assert (
         errors.check_audio_format(
-            path=data_path, name="invalid_file", configuration_path=configuration_file
+            path=data_path,
+            name="invalid_file",
+            configuration_path=configuration_file,
         )
         is False
     )
 
 
-# --------------------------------------------------------------------------------------------------
-# Tests for core.errors.validations.path
-# --------------------------------------------------------------------------------------------------
-def test_check_path_accessible(setup):
+# Tests for core.errors.validations.path.
+def test_check_path_accessible(setup: SetupData) -> None:
     path, _, _ = setup
 
     assert errors.check_path_accessible(path)
@@ -80,18 +87,21 @@ def test_check_path_accessible(setup):
     assert errors.check_path_accessible(Path("invalid_path")) is False
 
 
-def test_check_file_readable(setup):
+def test_check_file_readable(setup: SetupData) -> None:
     path, name, _ = setup
 
     assert errors.check_file_readable(path=path, name=name)
 
     assert errors.check_file_readable(path=Path(""), name=name) is False
-    assert errors.check_file_readable(path=Path("invalid_path"), name=name) is False
+    assert (
+        errors.check_file_readable(path=Path("invalid_path"), name=name)
+        is False
+    )
     assert errors.check_file_readable(path=path, name="") is False
     assert errors.check_file_readable(path=path, name="invalid_name") is False
 
 
-def test_validate_path(setup):
+def test_validate_path(setup: SetupData) -> None:
     path, name, _ = setup
 
     assert errors.validate_path(path=path, name=name)

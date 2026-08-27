@@ -23,11 +23,11 @@ def main():
         / "configurations"
         / "artc_config.toml"
     )
-    files_path = current_path.parent / "test_collection" / "TEMPORARY_sample_selection"
-    # files_path = current_path.parent / "test_collection" / "TEMPORARY_papper_selection"
+    # files_path = current_path.parent / "test_collection" / "TEMPORARY_sample_selection"
+    files_path = current_path.parent / "test_collection" / "TEMPORARY_papper_selection"
 
-    results_dir = current_path.parent / "TEMPORARY_demo_results"
-    # results_dir = current_path.parent / "TEMPORARY_papper_results"
+    # results_dir = current_path.parent / "TEMPORARY_demo_results"
+    results_dir = current_path.parent / "TEMPORARY_papper_results"
     results_dir.mkdir(exist_ok=True)
 
     example_set = dt_structs.WorkingSet("main_set")
@@ -49,24 +49,27 @@ def main():
             stat_name = stat[0]
             result_array = np.array(stat[1])
             result_array = result_array.reshape(n_audios, n_audios)
+            table_array = np.round(result_array, 2)
 
             viridis = colormaps.get_cmap("viridis")
-            newcolors = viridis(np.linspace(0, 1, 256))
-            red = np.array([1, 0, 0, 1])
-            newcolors[:1, :] = red
-            newcmp = ListedColormap(newcolors)
+            newcmp = ListedColormap(viridis(np.linspace(0, 1, 256)))
+            # A pair where a comparison failed, whether from a memory limit
+            # or any other exception (see task_manager._comparator), shows
+            # up as NaN and gets painted red so it can't be confused with a
+            # real similarity value.
+            newcmp.set_bad(color="red")
 
             plt.figure(figsize=(20, 16))
             sns.heatmap(
-                result_array,
+                table_array,
                 cmap=newcmp,
                 annot=True,
                 cbar=True,
                 fmt=".2f",
-                xticklabels=[str(i) for i in range(1, result_array.shape[1] + 1)],
-                yticklabels=[str(i) for i in range(1, result_array.shape[0] + 1)],
-                vmin=-1,
-                vmax=100,
+                xticklabels=[str(i) for i in range(1, table_array.shape[1] + 1)],
+                yticklabels=[str(i) for i in range(1, table_array.shape[0] + 1)],
+                vmin=0,
+                vmax=1,
             )
             plt.title(f"{metric} - {stat_name}")
             plt.xlabel("Audios")

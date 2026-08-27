@@ -5,17 +5,17 @@ import pytest
 
 import artc.core.datastructures as dt_structs
 
+SetupData = tuple[Path, Path, dict[str, list[dt_structs.AudioFile]]]
+
 
 @pytest.fixture()
-def setup():
+def setup() -> SetupData:
     current_path = Path(__file__)
 
     if current_path.parent.name == "tests":
         data_path = current_path.parent / "fixtures"
         config_path = (
-            current_path.parent.parent
-            / "configurations"
-            / "artc_config.toml"
+            current_path.parent.parent / "configurations" / "artc_config.toml"
         )
     else:
         data_path = current_path.parent / "tests" / "fixtures"
@@ -28,19 +28,19 @@ def setup():
             dt_structs.AudioFile(
                 path=data_path,
                 name="little-waves.mp3",
-                audio_signal_unloaded=lambda: np.zeros(100),
+                audio_signal_unloaded=lambda: np.zeros(100, dtype=np.float32),
                 sample_rate=44100,
             ),
             dt_structs.AudioFile(
                 path=data_path,
                 name="waves-in-caves.wav",
-                audio_signal_unloaded=lambda: np.zeros(100),
+                audio_signal_unloaded=lambda: np.zeros(100, dtype=np.float32),
                 sample_rate=44100,
             ),
             dt_structs.AudioFile(
                 path=data_path,
                 name="Water Sizzle.mp3",
-                audio_signal_unloaded=lambda: np.zeros(100),
+                audio_signal_unloaded=lambda: np.zeros(100, dtype=np.float32),
                 sample_rate=44100,
             ),
         ]
@@ -49,12 +49,12 @@ def setup():
     return config_path, data_path, data_set
 
 
-# --------------------------------------------------------------------------------------------------
-# Tests for core.datastructures.working_set
-# --------------------------------------------------------------------------------------------------
-def test_search_file(setup):
+# Tests for core.datastructures.working_set.
+def test_search_file(setup: SetupData) -> None:
     _, _, data_set = setup
-    test_set = dt_structs.WorkingSet("test_set", test_mode=True, data_set=data_set)
+    test_set = dt_structs.WorkingSet(
+        "test_set", test_mode=True, data_set=data_set
+    )
 
     # Two calling forms are supported, "'name' in test_set", which checks the
     # default group, and "('name', 'group') in test_set", which checks the
@@ -73,16 +73,21 @@ def test_search_file(setup):
     assert ("invalid_file" in test_set) is False
 
 
-def test_add_file(setup):
+def test_add_file(setup: SetupData) -> None:
     configuration_path, files_path, data_set = setup
-    test_set = dt_structs.WorkingSet("test_set", test_mode=True, data_set=data_set)
+    test_set = dt_structs.WorkingSet(
+        "test_set", test_mode=True, data_set=data_set
+    )
 
     assert test_set.add_file(
-        path=files_path, name="little-waves.mp3", configuration_path=configuration_path
+        path=files_path,
+        name="little-waves.mp3",
+        configuration_path=configuration_path,
     )
 
     assert (
-        test_set.add_file(path=Path(""), name="", configuration_path=Path("")) is False
+        test_set.add_file(path=Path(""), name="", configuration_path=Path(""))
+        is False
     )
     assert (
         test_set.add_file(
@@ -94,7 +99,9 @@ def test_add_file(setup):
     )
     assert (
         test_set.add_file(
-            path=files_path, name="little-waves.mp3", configuration_path=Path("")
+            path=files_path,
+            name="little-waves.mp3",
+            configuration_path=Path(""),
         )
         is False
     )
@@ -122,15 +129,19 @@ def test_add_file(setup):
     )
     assert (
         test_set.add_file(
-            path=files_path, name="invalid_name", configuration_path=configuration_path
+            path=files_path,
+            name="invalid_name",
+            configuration_path=configuration_path,
         )
         is False
     )
 
 
-def test_remove_file(setup):
+def test_remove_file(setup: SetupData) -> None:
     _, _, data_set = setup
-    test_set = dt_structs.WorkingSet("test_set", test_mode=True, data_set=data_set)
+    test_set = dt_structs.WorkingSet(
+        "test_set", test_mode=True, data_set=data_set
+    )
 
     assert test_set.remove_file(name="little-waves.mp3")
     assert test_set.remove_file(
@@ -140,10 +151,15 @@ def test_remove_file(setup):
     assert test_set.remove_file(name="", group="") is False
     assert test_set.remove_file(name="", group="individual_files") is False
     assert (
-        test_set.remove_file(name=data_set["individual_files"][0].name, group="")
+        test_set.remove_file(
+            name=data_set["individual_files"][0].name, group=""
+        )
         is False
     )
-    assert test_set.remove_file(name="invalid_name", group="individual_files") is False
+    assert (
+        test_set.remove_file(name="invalid_name", group="individual_files")
+        is False
+    )
     assert (
         test_set.remove_file(
             name=data_set["individual_files"][0].name, group="invalid_group"
@@ -152,19 +168,27 @@ def test_remove_file(setup):
     )
 
 
-def test_add_directory(setup):
+def test_add_directory(setup: SetupData) -> None:
     configuration_path, files_path, data_set = setup
-    test_set = dt_structs.WorkingSet("test_set", test_mode=True, data_set=data_set)
+    test_set = dt_structs.WorkingSet(
+        "test_set", test_mode=True, data_set=data_set
+    )
 
     assert test_set.add_directory(
-        path=files_path, configuration_path=configuration_path, group="individual_files"
+        path=files_path,
+        configuration_path=configuration_path,
+        group="individual_files",
     )
     assert test_set.add_directory(
-        path=files_path, configuration_path=configuration_path, group="new_group"
+        path=files_path,
+        configuration_path=configuration_path,
+        group="new_group",
     )
 
     assert (
-        test_set.add_directory(path=Path(""), configuration_path=Path(""), group="")
+        test_set.add_directory(
+            path=Path(""), configuration_path=Path(""), group=""
+        )
         is False
     )
     assert (
@@ -177,7 +201,9 @@ def test_add_directory(setup):
     )
     assert (
         test_set.add_directory(
-            path=files_path, configuration_path=Path(""), group="individual_files"
+            path=files_path,
+            configuration_path=Path(""),
+            group="individual_files",
         )
         is False
     )

@@ -1,7 +1,38 @@
+# ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄
+#
+#     |     '||''|.     .     ..|'''.|      .|'''.|            ||    .
+#    |||     ||   ||  .||.  .|'      '      ||..  '  ... ...  ...  .||.    ....
+#   |  ||    ||''|'    ||   ||               ''|||.   ||  ||   ||   ||   .|...||
+#  .''''|.   ||   |.   ||   '|.      .     .     '||  ||  ||   ||   ||   ||
+# .|.  .||. .||.  '|' .||.   ''|....'      |'....|'   '|..'|. .||.  '|.'  '|...'
+#
+# ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄ ▄▄
+#
+# This is the packaging and tooling configuration file for ARtC. It defines
+# the build backend, project metadata, dependencies and the static type
+# checking rules.
+#
+# setuptools reads it at build time, and pyright reads it during static
+# analysis.
+#
+# Author: Nicolás Cereijo Ranchal
+# Part of the ARtC (Audio Real-time Comparator) framework
+
+
+# │
+# │ Build system
+# └───────────────────────────────────────────────────────────────────────
+# │ Defines the backend used to build and package ARtC.
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+
+# │
+# │ Project metadata
+# └───────────────────────────────────────────────────────────────────────
+# │ Defines package identity, dependencies, URLs and entry points.
 
 [project]
 name = "artc"
@@ -15,11 +46,11 @@ authors = [
 ]
 keywords = ["audio", "analysis", "comparison", "real-time", "data collection"]
 
-# Dependencies are read from requirements.txt using dynamic metadata
+# Dependencies are read from requirements.txt using dynamic metadata.
 dynamic = ["dependencies"]
 
 [project.optional-dependencies]
-# Required only for the `artc test` CLI subcommand, not for library use
+# Required only for the `artc test` CLI subcommand, not for library use.
 test = ["pytest==8.3.4"]
 
 [project.urls]
@@ -30,6 +61,11 @@ Homepage = "https://github.com/nicolascereijo/artc"
 artc = "artc.__main__:main"
 
 
+# │
+# │ Setuptools configuration
+# └───────────────────────────────────────────────────────────────────────
+# │ Defines package discovery, layout and bundled non-Python data files.
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
@@ -37,13 +73,106 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 
-# Include package data (replaces setup.py package_data)
+# Include package data (replaces setup.py package_data).
 [tool.setuptools.package-data]
 "artc.core.configurations" = ["*.toml"]
 "artc.core.tests" = ["pytest.ini", "fixtures/*.mp3", "fixtures/*.wav"]
 "artc.cli" = ["commands.json"]
 
 
-# Load dependencies from requirements.txt
+# Load dependencies from requirements.txt.
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
+
+
+# │
+# │ Static type checking
+# └───────────────────────────────────────────────────────────────────────
+# │ Configures pyright and basedpyright, with overrides per directory.
+
+[tool.pyright]
+include = ["src"]
+extraPaths = ["src"]
+# Every import already resolves through the installed package layout, an
+# implicit relative import here is expected, not a mistake.
+reportImplicitRelativeImport = false
+
+# 'ensembles' and 'charts' import sklearn, and 'datastructures' and 'analysis'
+# import librosa, none of which ship type stubs. That alone floods those
+# directories with "Unknown" cascades (fit, predict, split, savefig, load...)
+# that no amount of local annotation can resolve, since the gap is in the
+# library, not in this code. The rest of 'src' keeps the default, stricter
+# rules.
+[[tool.pyright.executionEnvironments]]
+root = "src/artc/core/analysis"
+reportMissingTypeStubs = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+# Every metric here reads its window parameter through 'ConfigCache.read()',
+# whose return type is genuinely 'Any' by design, since one method reads
+# differently typed sections (int, bool, list...) behind a single signature.
+# That is a real, inherent gap in this project's own code, not a third party
+# stub gap, but it is the same "int(config.read_config(...))" call repeated in
+# nearly every file here, so it is downgraded here too instead of repeating
+# an identical ignore comment across all metric files.
+reportAny = false
+
+# 'ConfigCache.read()' is the actual source of the 'Any' the comment above
+# disables 'reportAny' for downstream, in 'analysis'. One method reads
+# differently typed configuration sections (int, bool, list...) behind a
+# single signature, so the values genuinely are 'Any' here, not just at
+# every caller.
+[[tool.pyright.executionEnvironments]]
+root = "src/artc/core/configurations"
+reportMissingTypeStubs = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+reportAny = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src/artc/core/ensembles"
+reportMissingTypeStubs = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src/artc/core/charts"
+reportMissingTypeStubs = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src/artc/core/datastructures"
+reportMissingTypeStubs = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src/artc/core/tests"
+reportMissingTypeStubs = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+
+# 'task_manager.py' reads 'processes', 'memory' and 'stats' through
+# 'config.read_config()', the same inherently 'Any' return described above,
+# so it gets the same downgrade. This only matches files directly in
+# 'src/artc/core' ('task_manager.py', '__init__.py'), the subdirectories
+# above stay on their own, more specific rules.
+[[tool.pyright.executionEnvironments]]
+root = "src/artc/core"
+reportAny = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src"

@@ -1,25 +1,15 @@
-"""
-Common type aliases, NumPy stubs and runtime type decorators for ARtC
-
-Provides core scalar and array aliases used throughout the framework, as well
-as optional runtime type enforcement decorators controlled by the configuration
-flags defined in [type_flags] of the TOML file
-
-Author: Nicolás Cereijo Ranchal
-Part of the ARtC (Audio Real-time Comparator) framework
-"""
-
 import inspect
 from argparse import Namespace
 from collections.abc import Callable
 from functools import wraps
 from logging import Logger
-from typing import Any, Protocol, cast
+from typing import Any, Literal, ParamSpec, Protocol, TypeVar, cast
 
 import numpy as np
 from numpy.typing import NDArray
 
-from artc.core.configurations import get_flags
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -62,34 +52,61 @@ np_ravel: UnaryArrayFn = cast(UnaryArrayFn, np.ravel)
 # ─────────────────────────────────────────────────────────────
 # Internal helpers
 # ─────────────────────────────────────────────────────────────
-def _get_param_value(func, args, kwargs, param_name: str) -> Any:
-    """Retrieve the value of a parameter (by name) passed to a function
+def _get_param_value(  # pyright: ignore[reportAny]
+    func: Callable[..., Any],  # pyright: ignore[reportExplicitAny]
+    args: tuple[Any, ...],  # pyright: ignore[reportExplicitAny]
+    kwargs: dict[str, Any],  # pyright: ignore[reportExplicitAny]
+    param_name: str,
+) -> Any:  # pyright: ignore[reportExplicitAny]
+    """Reads the value bound to one parameter of a call to 'func'.
 
-    Uses the function signature for accurate positional/keyword mapping, even
-    when multiple decorators are stacked
+    Uses 'func's own signature to resolve positional and keyword arguments
+    accurately, even when multiple decorators are stacked around it.
+
+    Args:
+        func: Callable whose signature is used to resolve 'param_name'.
+        args: Positional arguments 'func' was called with.
+        kwargs: Keyword arguments 'func' was called with.
+        param_name: Name of the parameter to read.
+
+    Returns:
+        The value bound to 'param_name', or 'None' if it was not supplied
+        and has no default.
     """
-    original = inspect.unwrap(func)
+    original = inspect.unwrap(func)  # pyright: ignore[reportAny]
 
-    sig = inspect.signature(original)
+    sig = inspect.signature(original)  # pyright: ignore[reportAny]
     bound = sig.bind_partial(*args, **kwargs)
     bound.apply_defaults()
 
     return bound.arguments.get(param_name, None)
 
 
-def _should_skip_check(level: str) -> bool:
-    """Return True if type checking should be skipped based on config flags
+def _should_skip_check(
+    level: Literal["frontier_checks", "full_checks"],
+) -> bool:
+    """Decides whether a type check at the given level should be skipped.
 
-    Logic:
-        - If full_checks is enabled, always perform type checking
-        - If only frontier_checks is enabled, check only frontier-level decorators
-        - If both are disabled, skip all type checks
+    'full_checks' being enabled always runs every check, regardless of
+    'level'. Otherwise, only checks whose own 'level' is 'frontier_checks'
+    run, and only if that flag is itself enabled.
+
+    Args:
+        level: Configuration flag gating this particular check.
+
+    Returns:
+        'True' if the check should be skipped.
     """
+    # Deferred because 'artc.core' imports 'task_manager', which imports this
+    # module's decorators at module scope. A top level import here would make
+    # 'artc.types' depend on 'artc.core' finishing its own import first, which
+    # is circular whenever 'artc.types' is imported before 'artc.core' is.
+    from artc.core.configurations import get_flags
+
     frontier_enabled, full_enabled = get_flags()
 
     if full_enabled:
         return False
-    # if only frontier is enabled, skip if this decorator is not frontier
     if level == "frontier_checks":
         return not frontier_enabled
     return True
@@ -98,23 +115,46 @@ def _should_skip_check(level: str) -> bool:
 # ─────────────────────────────────────────────────────────────
 # Decorator with dynamic flag control
 # ─────────────────────────────────────────────────────────────
-def NDArrayFloatCheck(param_name: str, level: str = "frontier_checks"):
-    """Ensure the parameter is NDArrayFloat, conditional on config flag"""
+def NDArrayFloatCheck(
+    param_name: str,
+    level: Literal["frontier_checks", "full_checks"] = "frontier_checks",
+) -> Callable[[Callable[P, R]], Callable[P, R]]:
+    """Builds a decorator that checks one parameter is a valid NDArrayFloat.
 
-    def decorator(func):
+    The check itself only runs when 'level' is enabled in the '[type_flags]'
+    section of the TOML configuration, see '_should_skip_check'. This lets
+    the framework ship the check everywhere while keeping it opt-in at
+    runtime, since walking every parameter's signature on every call has a
+    real cost.
+
+    Args:
+        param_name: Name of the decorated function's parameter to check.
+        level: Configuration flag gating the check.
+
+    Returns:
+        A decorator that raises 'TypeError' when the check is enabled and
+        'param_name' is not an 'NDArrayFloat' with the right dtype, and
+        otherwise calls the decorated function unchanged.
+    """
+
+    def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             if _should_skip_check(level):
                 return func(*args, **kwargs)
 
-            value = _get_param_value(func, args, kwargs, param_name)
+            value = _get_param_value(  # pyright: ignore[reportAny]
+                func, args, kwargs, param_name
+            )
             if not isinstance(value, np.ndarray):
                 raise TypeError(
-                    f"Parameter '{param_name}' must be NDArrayFloat, got {type(value).__name__}"
+                    f"Parameter '{param_name}' must be NDArrayFloat, got " +
+                    f"{type(value).__name__}"  # pyright: ignore[reportAny]
                 )
             if value.dtype != FloatScalar:
                 raise TypeError(
-                    f"Parameter '{param_name}' must have dtype=FloatScalar, got dtype={value.dtype}"
+                    f"Parameter '{param_name}' must have dtype=FloatScalar, " +
+                    f"got dtype={value.dtype}"
                 )
 
             return func(*args, **kwargs)

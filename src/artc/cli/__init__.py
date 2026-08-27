@@ -1,7 +1,8 @@
 import importlib
-from typing import TYPE_CHECKING, Callable, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, cast
 
-__all__ = ["parse_args", "handle_command"]
+__all__ = ["handle_command", "parse_args"]
 
 if TYPE_CHECKING:
     from artc.cli.commands import handle_command, parse_args

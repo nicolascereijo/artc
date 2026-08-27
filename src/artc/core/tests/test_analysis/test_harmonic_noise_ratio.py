@@ -1,25 +1,34 @@
 from pathlib import Path
+from typing import TypedDict
 
 import pytest
 from librosa import load
 
-import artc.core.analysis as analysis
+from artc.core import analysis
+
+
+class FileEntry(TypedDict):
+    path: Path
+    name: str
+
+
+SetupData = dict[str, list[FileEntry]]
 
 
 @pytest.fixture()
-def setup():
+def setup() -> SetupData:
     execution_path = Path(__file__)
 
     base_path = execution_path.parent
     fixtures_path = {
         "test_analysis": base_path.parent
-        / "fixtures",  # Path when running from 'test_analysis'
-        "tests": base_path / "fixtures",  # Path when running from 'tests'
+        / "fixtures",  # Path when running from 'test_analysis'.
+        "tests": base_path / "fixtures",  # Path when running from 'tests'.
     }.get(
         base_path.name, base_path / "tests" / "fixtures"
-    )  # Default, when running from 'core'
+    )  # Default, when running from 'core'.
 
-    data_set = {
+    data_set: SetupData = {
         "individual_files": [
             {"path": fixtures_path, "name": "little-waves.mp3"},
             {"path": fixtures_path, "name": "waves-in-caves.wav"},
@@ -30,19 +39,19 @@ def setup():
     return data_set
 
 
-def test_compare_two_hnr(setup):
+def test_compare_two_hnr(setup: SetupData) -> None:
     data_set = setup
     n_fft = 512
     hop_length = 512
-    audio_signal1, sample_rate1 = load(
+    audio_signal1, _sample_rate1 = load(
         data_set["individual_files"][0]["path"]
         / data_set["individual_files"][0]["name"]
     )
-    audio_signal2, sample_rate2 = load(
+    audio_signal2, _sample_rate2 = load(
         data_set["individual_files"][1]["path"]
         / data_set["individual_files"][1]["name"]
     )
-    audio_signal3, sample_rate3 = load(
+    audio_signal3, _sample_rate3 = load(
         data_set["individual_files"][2]["path"]
         / data_set["individual_files"][2]["name"]
     )
@@ -69,7 +78,10 @@ def test_compare_two_hnr(setup):
     assert (
         round(
             analysis.compare_two_hnr(
-                audio_signal1, audio_signal2, n_fft=n_fft, hop_length=hop_length
+                audio_signal1,
+                audio_signal2,
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -78,7 +90,10 @@ def test_compare_two_hnr(setup):
     assert (
         round(
             analysis.compare_two_hnr(
-                audio_signal2, audio_signal1, n_fft=n_fft, hop_length=hop_length
+                audio_signal2,
+                audio_signal1,
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -88,7 +103,10 @@ def test_compare_two_hnr(setup):
     assert (
         round(
             analysis.compare_two_hnr(
-                audio_signal1, audio_signal3, n_fft=n_fft, hop_length=hop_length
+                audio_signal1,
+                audio_signal3,
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -97,7 +115,10 @@ def test_compare_two_hnr(setup):
     assert (
         round(
             analysis.compare_two_hnr(
-                audio_signal3, audio_signal1, n_fft=n_fft, hop_length=hop_length
+                audio_signal3,
+                audio_signal1,
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -107,7 +128,10 @@ def test_compare_two_hnr(setup):
     assert (
         round(
             analysis.compare_two_hnr(
-                audio_signal2, audio_signal3, n_fft=n_fft, hop_length=hop_length
+                audio_signal2,
+                audio_signal3,
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -116,7 +140,10 @@ def test_compare_two_hnr(setup):
     assert (
         round(
             analysis.compare_two_hnr(
-                audio_signal3, audio_signal2, n_fft=n_fft, hop_length=hop_length
+                audio_signal3,
+                audio_signal2,
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -124,19 +151,19 @@ def test_compare_two_hnr(setup):
     )
 
 
-def test_compare_multiple_hnr(setup):
+def test_compare_multiple_hnr(setup: SetupData) -> None:
     data_set = setup
     n_fft = 512
     hop_length = 512
-    audio_signal1, sample_rate1 = load(
+    audio_signal1, _sample_rate1 = load(
         data_set["individual_files"][0]["path"]
         / data_set["individual_files"][0]["name"]
     )
-    audio_signal2, sample_rate2 = load(
+    audio_signal2, _sample_rate2 = load(
         data_set["individual_files"][1]["path"]
         / data_set["individual_files"][1]["name"]
     )
-    audio_signal3, sample_rate3 = load(
+    audio_signal3, _sample_rate3 = load(
         data_set["individual_files"][2]["path"]
         / data_set["individual_files"][2]["name"]
     )
@@ -163,7 +190,9 @@ def test_compare_multiple_hnr(setup):
     assert (
         round(
             analysis.compare_multiple_hnr(
-                [audio_signal1, audio_signal2], n_fft=n_fft, hop_length=hop_length
+                [audio_signal1, audio_signal2],
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -172,7 +201,9 @@ def test_compare_multiple_hnr(setup):
     assert (
         round(
             analysis.compare_multiple_hnr(
-                [audio_signal2, audio_signal1], n_fft=n_fft, hop_length=hop_length
+                [audio_signal2, audio_signal1],
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -182,7 +213,9 @@ def test_compare_multiple_hnr(setup):
     assert (
         round(
             analysis.compare_multiple_hnr(
-                [audio_signal1, audio_signal3], n_fft=n_fft, hop_length=hop_length
+                [audio_signal1, audio_signal3],
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -191,7 +224,9 @@ def test_compare_multiple_hnr(setup):
     assert (
         round(
             analysis.compare_multiple_hnr(
-                [audio_signal3, audio_signal1], n_fft=n_fft, hop_length=hop_length
+                [audio_signal3, audio_signal1],
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -201,7 +236,9 @@ def test_compare_multiple_hnr(setup):
     assert (
         round(
             analysis.compare_multiple_hnr(
-                [audio_signal2, audio_signal3], n_fft=n_fft, hop_length=hop_length
+                [audio_signal2, audio_signal3],
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )
@@ -210,7 +247,9 @@ def test_compare_multiple_hnr(setup):
     assert (
         round(
             analysis.compare_multiple_hnr(
-                [audio_signal3, audio_signal2], n_fft=n_fft, hop_length=hop_length
+                [audio_signal3, audio_signal2],
+                n_fft=n_fft,
+                hop_length=hop_length,
             ),
             5,
         )

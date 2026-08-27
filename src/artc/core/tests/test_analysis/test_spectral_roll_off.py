@@ -1,25 +1,34 @@
 from pathlib import Path
+from typing import TypedDict
 
 import pytest
 from librosa import load
 
-import artc.core.analysis as analysis
+from artc.core import analysis
+
+
+class FileEntry(TypedDict):
+    path: Path
+    name: str
+
+
+SetupData = dict[str, list[FileEntry]]
 
 
 @pytest.fixture()
-def setup():
+def setup() -> SetupData:
     execution_path = Path(__file__)
 
     base_path = execution_path.parent
     fixtures_path = {
         "test_analysis": base_path.parent
-        / "fixtures",  # Path when running from 'test_analysis'
-        "tests": base_path / "fixtures",  # Path when running from 'tests'
+        / "fixtures",  # Path when running from 'test_analysis'.
+        "tests": base_path / "fixtures",  # Path when running from 'tests'.
     }.get(
         base_path.name, base_path / "tests" / "fixtures"
-    )  # Default, when running from 'core'
+    )  # Default, when running from 'core'.
 
-    data_set = {
+    data_set: SetupData = {
         "individual_files": [
             {"path": fixtures_path, "name": "little-waves.mp3"},
             {"path": fixtures_path, "name": "waves-in-caves.wav"},
@@ -30,7 +39,7 @@ def setup():
     return data_set
 
 
-def test_compare_two_spectral_roll_off(setup):
+def test_compare_two_spectral_roll_off(setup: SetupData) -> None:
     data_set = setup
     n_fft = 512
     audio_signal1, sample_rate1 = load(
@@ -48,19 +57,31 @@ def test_compare_two_spectral_roll_off(setup):
 
     assert (
         analysis.compare_two_spectral_roll_off(
-            audio_signal1, audio_signal1, sample_rate1, sample_rate1, n_fft=n_fft
+            audio_signal1,
+            audio_signal1,
+            sample_rate1,
+            sample_rate1,
+            n_fft=n_fft,
         )
         == 1
     )
     assert (
         analysis.compare_two_spectral_roll_off(
-            audio_signal2, audio_signal2, sample_rate2, sample_rate2, n_fft=n_fft
+            audio_signal2,
+            audio_signal2,
+            sample_rate2,
+            sample_rate2,
+            n_fft=n_fft,
         )
         == 1
     )
     assert (
         analysis.compare_two_spectral_roll_off(
-            audio_signal3, audio_signal3, sample_rate3, sample_rate3, n_fft=n_fft
+            audio_signal3,
+            audio_signal3,
+            sample_rate3,
+            sample_rate3,
+            n_fft=n_fft,
         )
         == 1
     )
@@ -68,7 +89,11 @@ def test_compare_two_spectral_roll_off(setup):
     assert (
         round(
             analysis.compare_two_spectral_roll_off(
-                audio_signal1, audio_signal2, sample_rate1, sample_rate2, n_fft=n_fft
+                audio_signal1,
+                audio_signal2,
+                sample_rate1,
+                sample_rate2,
+                n_fft=n_fft,
             ),
             5,
         )
@@ -77,7 +102,11 @@ def test_compare_two_spectral_roll_off(setup):
     assert (
         round(
             analysis.compare_two_spectral_roll_off(
-                audio_signal2, audio_signal1, sample_rate2, sample_rate1, n_fft=n_fft
+                audio_signal2,
+                audio_signal1,
+                sample_rate2,
+                sample_rate1,
+                n_fft=n_fft,
             ),
             5,
         )
@@ -87,7 +116,11 @@ def test_compare_two_spectral_roll_off(setup):
     assert (
         round(
             analysis.compare_two_spectral_roll_off(
-                audio_signal1, audio_signal3, sample_rate1, sample_rate3, n_fft=n_fft
+                audio_signal1,
+                audio_signal3,
+                sample_rate1,
+                sample_rate3,
+                n_fft=n_fft,
             ),
             5,
         )
@@ -96,7 +129,11 @@ def test_compare_two_spectral_roll_off(setup):
     assert (
         round(
             analysis.compare_two_spectral_roll_off(
-                audio_signal3, audio_signal1, sample_rate3, sample_rate1, n_fft=n_fft
+                audio_signal3,
+                audio_signal1,
+                sample_rate3,
+                sample_rate1,
+                n_fft=n_fft,
             ),
             5,
         )
@@ -106,7 +143,11 @@ def test_compare_two_spectral_roll_off(setup):
     assert (
         round(
             analysis.compare_two_spectral_roll_off(
-                audio_signal2, audio_signal3, sample_rate2, sample_rate3, n_fft=n_fft
+                audio_signal2,
+                audio_signal3,
+                sample_rate2,
+                sample_rate3,
+                n_fft=n_fft,
             ),
             5,
         )
@@ -115,7 +156,11 @@ def test_compare_two_spectral_roll_off(setup):
     assert (
         round(
             analysis.compare_two_spectral_roll_off(
-                audio_signal3, audio_signal2, sample_rate3, sample_rate2, n_fft=n_fft
+                audio_signal3,
+                audio_signal2,
+                sample_rate3,
+                sample_rate2,
+                n_fft=n_fft,
             ),
             5,
         )
@@ -123,7 +168,7 @@ def test_compare_two_spectral_roll_off(setup):
     )
 
 
-def test_compare_multiple_spectral_roll_off(setup):
+def test_compare_multiple_spectral_roll_off(setup: SetupData) -> None:
     data_set = setup
     n_fft = 512
     audio_signal1, sample_rate1 = load(
@@ -141,19 +186,25 @@ def test_compare_multiple_spectral_roll_off(setup):
 
     assert (
         analysis.compare_multiple_spectral_roll_off(
-            [audio_signal1, audio_signal1], [sample_rate1, sample_rate1], n_fft=n_fft
+            [audio_signal1, audio_signal1],
+            [sample_rate1, sample_rate1],
+            n_fft=n_fft,
         )
         == 1
     )
     assert (
         analysis.compare_multiple_spectral_roll_off(
-            [audio_signal2, audio_signal2], [sample_rate2, sample_rate2], n_fft=n_fft
+            [audio_signal2, audio_signal2],
+            [sample_rate2, sample_rate2],
+            n_fft=n_fft,
         )
         == 1
     )
     assert (
         analysis.compare_multiple_spectral_roll_off(
-            [audio_signal3, audio_signal3], [sample_rate3, sample_rate3], n_fft=n_fft
+            [audio_signal3, audio_signal3],
+            [sample_rate3, sample_rate3],
+            n_fft=n_fft,
         )
         == 1
     )
